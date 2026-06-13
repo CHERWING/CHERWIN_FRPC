@@ -1,0 +1,7 @@
+id=CHERWIN_FRPC
+name=CHERWIN_FRPC 内网穿透客户端
+version=v1.0.0
+versionCode=100
+author=CHERWIN
+description=⚡ 高性能 FRP 内网穿透客户端 (KernelSU/Magisk 专版)。内置 WebUI 可视化面板 (默认端口 8099)，支持：参数热重载、多代理通道状态监控、实时日志解析与 Store 动态持久化管理。让手机极速变身服务器与便携网盘！
+updateJson=https://raw.githubusercontent.com/CHERWING/CHERWIN_FRPC/main/update.json
