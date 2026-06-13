@@ -1,5 +1,4 @@
 #!/system/bin/sh
-
 MODDIR=${0%/*}
 
 # Set executable permissions
@@ -9,6 +8,31 @@ chmod 755 $MODDIR/webroot/cgi-bin/*
 # Create log and run directories
 mkdir -p $MODDIR/log
 mkdir -p $MODDIR/run
+
+# Function to check battery
+check_battery_and_stop() {
+    while true; do
+        if [ -f "$MODDIR/run/frpc.pid" ]; then
+            local pid=$(cat "$MODDIR/run/frpc.pid")
+            # Only check if process is actually running
+            if kill -0 "$pid" 2>/dev/null; then
+                # Get battery level and charging status via dumpsys
+                local battery_level=$(dumpsys battery | grep "level:" | awk '{print $2}')
+                local status=$(dumpsys battery | grep "status:" | awk '{print $2}')
+                
+                # status 2 means charging, 5 means full. If it's not 2 or 5, it's discharging.
+                # Only stop if level < 20 and not charging
+                if [ "$battery_level" -lt 20 ] && [ "$status" != "2" ] && [ "$status" != "5" ]; then
+                    kill "$pid"
+                    rm -f "$MODDIR/run/frpc.pid"
+                    echo "[$(date)] Auto-stopped frpc: Battery critical (${battery_level}%) and not charging." >> "$MODDIR/log/service.log"
+                fi
+            fi
+        fi
+        # Check every 5 minutes (300 seconds)
+        sleep 300
+    done
+}
 
 # Function to start service
 start_frpc() {
@@ -46,3 +70,6 @@ start_httpd() {
 
 start_frpc
 start_httpd
+
+# Start battery monitor daemon in background
+nohup check_battery_and_stop > /dev/null 2>&1 &

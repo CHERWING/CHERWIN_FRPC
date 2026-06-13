@@ -6,14 +6,14 @@
     <title>CHERWIN FRPC 模块控制面板</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f7; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; min-height: 95vh;}
         .header { background-color: #007aff; color: white; padding: 20px; text-align: center; position: relative; }
         .header h1 { margin: 0; font-size: 24px; }
         .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
         .nav { display: flex; background: #f0f0f0; border-bottom: 1px solid #ddd; }
         .nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 16px; cursor: pointer; transition: background 0.3s; }
         .nav button.active { background: white; font-weight: bold; border-bottom: 2px solid #007aff; }
-        .content { padding: 20px; }
+        .content { padding: 20px; flex: 1;}
         .section { display: none; }
         .section.active { display: block; }
         .card { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
@@ -46,7 +46,6 @@
         .docs-content th { background: #f9f9f9; }
         .docs-content td, .docs-content th { border: 1px solid #ddd; padding: 6px 10px; font-size: 12px; }
         
-        /* New styles for better core process layout */
         .core-control-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media (min-width: 500px) {
             .core-control-grid { grid-template-columns: 2fr 1fr; }
@@ -58,6 +57,10 @@
         @media (min-width: 500px) {
             .action-group { flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; }
         }
+        
+        .footer { text-align: center; padding: 15px; margin-top: auto; border-top: 1px solid #eee; background-color: #fafafa; font-size: 12px; color: #888;}
+        .footer a { color: #007aff; text-decoration: none; font-weight: bold; }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -100,6 +103,9 @@
                         <button class="btn btn-danger" style="flex:1" onclick="controlAction('restart')">↺ 重 启</button>
                         <button class="btn" style="flex:1; background-color: #8e8e93;" onclick="controlAction('stop')">■ 停 止</button>
                     </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 11px; color: #888; text-align: center;">
+                    🔋 已启用低电量保护：电量 < 20% 且未充电时，进程将自动停止以保护电池。
                 </div>
             </div>
 
@@ -305,6 +311,10 @@ location / {
                 </div>
             </div>
         </div>
+    </div>
+    
+    <div class="footer">
+        Powered by <a href="https://github.com/CHERWING/CHERWIN_FRPC" target="_blank">CHERWIN</a> | FRPC Kernel v0.69.1
     </div>
 </div>
 
