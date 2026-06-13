@@ -33,20 +33,20 @@ get_mem() {
 
 get_server_status() {
     if ! is_running; then
-        echo "未启动"
+        echo "未启�?
         return
     fi
     if [ -f "$MODDIR/log/frpc.log" ]; then
         last_event=$(grep -E "login to server success|connect to server error|login to server failed|work connection closed|token is not valid|i/o timeout|connection refused" "$MODDIR/log/frpc.log" | tail -n 1)
         if echo "$last_event" | grep -q "success"; then
-            echo "已连接"
+            echo "已连�?
         elif echo "$last_event" | grep -q -E "error|failed|closed|invalid|timeout|refused"; then
             echo "连接异常"
         else
-            echo "连接中..."
+            echo "连接�?.."
         fi
     else
-        echo "无日志"
+        echo "无日�?
     fi
 }
 
