@@ -1,3 +1,5 @@
+[中文](README.md) | [English](README_en.md)
+
 # CHERWIN FRPC 🚀
 
 > ⚡ 高性能 FRP 内网穿透客户端 (KernelSU / Magisk 专版)
