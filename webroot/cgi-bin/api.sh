@@ -123,6 +123,7 @@ case "$action" in
             pid=$(cat "$PID_FILE")
             kill "$pid"
             rm -f "$PID_FILE"
+            sed -i "/^description=/c\description=⏹️ 已停止" "$MODDIR/module.prop"
             echo "[$(date)] WebUI: Stopped frpc (PID $pid)" >> "$SERVICE_LOG"
             echo "{\"success\": true, \"message\": \"已停止\"}"
         else

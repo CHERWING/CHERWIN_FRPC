@@ -7,6 +7,18 @@ chmod 755 $MODDIR/webroot/cgi-bin/*
 mkdir -p $MODDIR/log
 mkdir -p $MODDIR/run
 
+update_description() {
+    local pid=""
+    if [ -f "$MODDIR/run/frpc.pid" ]; then
+        pid=$(cat "$MODDIR/run/frpc.pid")
+        if kill -0 "$pid" 2>/dev/null; then
+            sed -i "/^description=/c\description=▶️ 运行中 (PID: $pid)" "$MODDIR/module.prop"
+            return
+        fi
+    fi
+    sed -i "/^description=/c\description=⏹️ 已停止" "$MODDIR/module.prop"
+}
+
 check_battery_and_stop() {
     while true; do
         if [ -f "$MODDIR/run/frpc.pid" ]; then
@@ -18,6 +30,7 @@ check_battery_and_stop() {
                     kill "$pid"
                     rm -f "$MODDIR/run/frpc.pid"
                     echo "[$(date)] Auto-stopped frpc: Battery critical (${battery_level}%) and not charging." >> "$MODDIR/log/service.log"
+                    update_description
                 fi
             fi
         fi
@@ -41,14 +54,26 @@ start_frpc() {
     fi
     
     if [ -f "$conf" ]; then
-        # Use busybox nohup to avoid background job issues
         nohup $bin -c $conf > $log 2>&1 &
         local pid=$!
         echo $pid > $MODDIR/run/frpc.pid
         echo "[$(date)] Started frpc with PID $pid" >> $MODDIR/log/service.log
+        update_description
     else
         echo "[$(date)] Error: Config file not found at $conf" >> $MODDIR/log/service.log
     fi
+}
+
+stop_frpc() {
+    if [ -f "$MODDIR/run/frpc.pid" ]; then
+        local pid=$(cat "$MODDIR/run/frpc.pid")
+        if kill -0 "$pid" 2>/dev/null; then
+            kill "$pid"
+            echo "[$(date)] Stopped frpc (PID $pid)" >> $MODDIR/log/service.log
+        fi
+        rm -f "$MODDIR/run/frpc.pid"
+    fi
+    update_description
 }
 
 # Start httpd for custom WebUI using busybox (port 8099)

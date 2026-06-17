@@ -29,8 +29,8 @@ ui_print " [1/3] [*] 正在释放模块文件..."
 ui_print " [2/3] [*] 正在配置文件与目录权限..."
 set_perm_recursive $MODDIR 0 0 0755 0644
 set_perm_recursive $MODDIR/bin 0 0 0755 0755
-set_perm_recursive $MODDIR/action.sh 0 0 0755 0755
-set_perm_recursive $MODDIR/service.sh 0 0 0755 0755
+set_perm $MODDIR/action.sh 0 0 0755 0755
+set_perm $MODDIR/service.sh 0 0 0755 0755
 sleep 1
 
 ui_print " [3/3] [+] 权限设置完成！"
@@ -40,11 +40,10 @@ ui_print "  [+] 安装大功告成！"
 ui_print " ----------------------------------------------------"
 ui_print " "
 ui_print "  [ 使用指南 ]："
-ui_print "  1. 请重启您的设备以使服务在后台自动生效。"
-ui_print "  2. 重启后，进入 KernelSU 模块管理页面。"
-ui_print "  3. 点击本模块左侧的「启动」图标。"
-ui_print "  4. 浏览器将自动打开 Web 管理控制台。"
-ui_print "  5. 手动访问地址: http://127.0.0.1:8099"
+ui_print "  1. 重启设备后，frpc 将自动在后台运行。"
+ui_print "  2. 在 KernelSU 模块列表点击「启动」切换服务。"
+ui_print "  3. 点击模块「WebUI」按钮打开管理面板。"
+ui_print "  4. 手动访问: http://127.0.0.1:8099"
 ui_print " "
 ui_print "  感谢使用 CHERWIN 专属定制模块！"
 ui_print " "
