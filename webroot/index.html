@@ -1,474 +1,739 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHERWIN FRPC 模块控制面板</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f7; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background-color: #007aff; color: white; padding: 20px; text-align: center; position: relative; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
-        .nav { display: flex; background: #f0f0f0; border-bottom: 1px solid #ddd; }
-        .nav button { flex: 1; padding: 15px; border: none; background: none; font-size: 16px; cursor: pointer; transition: background 0.3s; }
-        .nav button.active { background: white; font-weight: bold; border-bottom: 2px solid #007aff; }
-        .content { padding: 20px; }
-        .section { display: none; }
-        .section.active { display: block; }
-        .card { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-        .card h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; color: #555; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; min-width: 50px; text-align: center;}
-        .status-running { background-color: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; }
-        .status-stopped { background-color: #ffebee; color: #f44336; border: 1px solid #f44336; }
-        .status-warning { background-color: #fff3e0; color: #ff9800; border: 1px solid #ff9800; }
-        .status-unknown { background-color: #e0e0e0; color: #666; border: 1px solid #ccc; }
-        table { width: 100%; border-collapse: collapse; }
-        table th, table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-        textarea { width: 100%; height: 300px; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; resize: vertical; }
-        .btn { display: inline-block; padding: 8px 12px; background: #007aff; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: 500;}
-        .btn-danger { background: #ff3b30; }
-        .btn-success { background: #34c759; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .log-container { background: #1e1e1e; color: #00ff00; font-family: monospace; padding: 15px; border-radius: 4px; height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 12px;}
-        .help-text { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.5; }
-        .proxy-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .proxy-item { background: white; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .proxy-name { font-weight: bold; color: #333; }
-        .note-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin: 10px 0; font-size: 13px; border-radius: 0 4px 4px 0; }
-        .warning-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px; margin: 10px 0; font-size: 13px; border-radius: 0 4px 4px 0; }
-        .docs-content { font-size: 13px; line-height: 1.6; color: #444; }
-        .docs-content h4 { color: #222; margin-top: 15px; margin-bottom: 5px; font-size: 14px;}
-        .docs-content pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 12px; margin: 5px 0 15px 0; border: 1px solid #e0e0e0;}
-        .docs-content code { background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: monospace; color: #d63384; }
-        .docs-content ul { padding-left: 20px; margin-top: 5px; }
-        .docs-content table { border: 1px solid #ddd; margin: 10px 0; }
-        .docs-content th { background: #f9f9f9; }
-        .docs-content td, .docs-content th { border: 1px solid #ddd; padding: 6px 10px; font-size: 12px; }
-        
-        /* New styles for better core process layout */
-        .core-control-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media (min-width: 500px) {
-            .core-control-grid { grid-template-columns: 2fr 1fr; }
-        }
-        .info-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 14px; }
-        .info-label { width: 100px; color: #555; font-weight: 500; }
-        .info-value { flex: 1; display: flex; align-items: center; gap: 10px; }
-        .action-group { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-        @media (min-width: 500px) {
-            .action-group { flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; }
-        }
-        .footer { text-align: center; padding: 15px; margin-top: 20px; border-top: 1px solid #eee; background-color: #fafafa; font-size: 12px; color: #888;}
-        .footer a { color: #007aff; text-decoration: none; font-weight: bold; }
-        .footer a:hover { text-decoration: underline; }
-        .toast { position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 360px; word-break: break-word; opacity: 0; transform: translateY(-10px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast-success { background: #34c759; }
-        .toast-error { background: #ff3b30; }
-        .toast-info { background: #007aff; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>CHERWIN FRPC</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system,system-ui,sans-serif; background: #f2f2f7; color: #1c1c1e; padding: 12px; }
+.card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; color: #1c1c1e; }
+.btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.btn-primary { background: #007aff; color: #fff; }
+.btn-danger { background: #ff3b30; color: #fff; }
+.btn-secondary { background: #e5e5ea; color: #1c1c1e; }
+.btn:active { opacity: 0.7; }
+.status-line { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #fff; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.running .dot { background: #34c759; }
+.running .dot::after { content: ""; position: absolute; margin: -3px; width: 16px; height: 16px; border-radius: 50%; background: #34c759; opacity: 0.3; animation: pulse 2s infinite; display: block; }
+.stopped .dot { background: #ff3b30; }
+.dot-wrap { position: relative; display: flex; align-items: center; }
+@keyframes pulse { 0% { transform: scale(1); opacity: 0.3; } 100% { transform: scale(1.8); opacity: 0; } }
+#status-text { font-weight: 700; font-size: 14px; }
+.pid-badge { font-family: monospace; font-size: 11px; padding: 1px 6px; background: #e5e5ea; border-radius: 4px; color: #8e8e93; }
+.hidden { display: none !important; }
+.header-title { text-align: center; font-size: 20px; font-weight: 800; margin: 8px 0 2px; color: #1c1c1e; }
+.header-sub { text-align: center; font-size: 11px; color: #8e8e93; margin-bottom: 10px; }
+.tab-bar { display: flex; gap: 4px; padding: 4px; background: #e5e5ea; border-radius: 10px; margin-bottom: 12px; }
+.tab-btn { flex: 1; padding: 8px; border: none; background: none; border-radius: 8px; font-weight: 600; font-size: 13px; color: #8e8e93; cursor: pointer; }
+.tab-btn.active { background: #fff; color: #007aff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+textarea { width: 100%; height: 260px; padding: 10px; border: 1px solid #e5e5ea; border-radius: 8px; font-family: monospace; font-size: 12px; resize: vertical; background: #fafafa; }
+#log-viewer { background: #1c1c1e; color: #ececec; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 11px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; height: 300px; overflow-y: auto; }
+.proxy-item { display: inline-flex; align-items: center; gap: 6px; background: #f2f2f7; padding: 4px 10px; border-radius: 6px; font-size: 12px; margin: 3px; }
+.proxy-item .name { font-weight: 600; }
+.proxy-item .badge { padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.badge-ok { background: #34c759; color: #fff; }
+.badge-fail { background: #ff3b30; color: #fff; }
+.badge-unknown { background: #e5e5ea; color: #8e8e93; }
+.toast-wrap { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 999; }
+.toast { background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 14px; margin-bottom: 8px; animation: fadeIn 0.25s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.info-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f2f2f7; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #8e8e93; }
+.info-value { font-weight: 500; }
+.collapse-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.collapse-header h2 { margin: 0; font-size: 1rem; }
+.collapse-arrow { font-size: 12px; color: #8e8e93; transition: transform 0.2s; }
+.collapse-header.open .collapse-arrow { transform: rotate(180deg); }
+.collapse-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.collapse-body-inner { padding: 4px 16px 16px; }
+.guide-section { margin-bottom: 16px; }
+.guide-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #007aff; }
+.guide-section p, .guide-section li { font-size: 13px; line-height: 1.6; color: #3a3a3c; }
+.guide-section ul { padding-left: 18px; }
+.guide-section pre { background: #f2f2f7; padding: 10px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 8px 0; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+.guide-section code { background: #f2f2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+</style>
 </head>
-<body>
+<body class="stopped">
 
-<div class="container">
-    <div class="header">
-        <h1>CHERWIN FRPC 控制台</h1>
-        <p>KernelSU 模块 v1.0.0 | 内核版本: FRPC v0.69.1</p>
+<div id="toast-wrap" class="toast-wrap"></div>
+
+<div class="header-title">CHERWIN FRPC</div>
+<div class="header-sub">模块 v1.2.0 | 核心 v0.69.1</div>
+
+<div class="status-line" id="status-line">
+    <span class="dot-wrap"><span class="dot"></span></span>
+    <span id="status-text">检测中...</span>
+    <span id="pid-badge" class="pid-badge hidden"></span>
+    <span style="flex:1"></span>
+</div>
+
+<div class="btn-row">
+    <button class="btn btn-primary" id="btn-start">▶ 启 动</button>
+    <button class="btn btn-danger" id="btn-stop">■ 停 止</button>
+</div>
+
+<div class="tab-bar">
+    <button class="tab-btn active" data-tab="status">状态</button>
+    <button class="tab-btn" data-tab="config">配置</button>
+    <button class="tab-btn" data-tab="logs">日志</button>
+</div>
+
+<div id="tab-status" class="tab-content active">
+    <div class="card">
+        <h2>服务端连接</h2>
+        <div class="info-row"><span class="info-label">状态</span><span class="info-value" id="server-status">检测中...</span></div>
+        <div class="info-row"><span class="info-label">运行时间</span><span class="info-value" id="uptime">-</span></div>
+        <div class="info-row"><span class="info-label">内存占用</span><span class="info-value" id="mem">-</span></div>
     </div>
-    
-    <div class="nav">
-        <button class="active" data-tab="status" onclick="switchTab('status')">状态监控</button>
-        <button data-tab="config" onclick="switchTab('config')">参数配置</button>
-        <button data-tab="docs" onclick="switchTab('docs')">配置文档手册</button>
-        <button data-tab="logs" onclick="switchTab('logs')">运行日志</button>
+    <div class="card">
+        <h2>代理通道</h2>
+        <div id="proxy-list"><span style="color:#8e8e93;font-size:13px;">检测中...</span></div>
+    </div>
+    <div class="card">
+        <h2>FRP 仪表盘</h2>
+        <p style="font-size:13px;color:#8e8e93;margin-bottom:8px;">查看实时流量和隧道详情</p>
+        <button class="btn btn-primary" id="btn-dashboard">打开 FRP 仪表盘</button>
+    </div>
+</div>
+
+<div id="tab-config" class="tab-content">
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="margin:0">frpc.toml</h2>
+            <button class="btn btn-primary" id="btn-save-config" style="flex:initial;padding:8px 16px;">保存</button>
+        </div>
+        <textarea id="config-editor" spellcheck="false">加载中...</textarea>
+        <div id="config-template-hint" style="display:none;background:#ff9800;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;margin-top:8px;">⚠ 当前读取的是 frpc.toml.template（frpc.toml 不存在），修改后点「保存」即可生成。</div>
     </div>
 
-    <div class="content">
-        <!-- Status Section -->
-        <div id="status" class="section active">
-            <div class="card">
-                <h3>核心进程控制</h3>
-                <div class="core-control-grid">
-                    <div>
-                        <div class="info-row">
-                            <span class="info-label">运行状态：</span>
-                            <span class="info-value"><span class="status-badge status-stopped" id="frpc-status">检测中...</span></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">主服务端：</span>
-                            <span class="info-value"><span class="status-badge status-stopped" id="server-status">检测中...</span></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">进程 PID：</span>
-                            <span class="info-value" style="font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px;" id="frpc-pid">N/A</span>
-                        </div>
-                    </div>
-                    <div class="action-group">
-                        <button class="btn btn-success" style="flex:1" onclick="controlAction('start')">▶ 启 动</button>
-                        <button class="btn btn-danger" style="flex:1" onclick="controlAction('restart')">↺ 重 启</button>
-                        <button class="btn" style="flex:1; background-color: #8e8e93;" onclick="controlAction('stop')">■ 停 止</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>各代理通道状态</h3>
-                <div id="proxy-status-container" class="proxy-grid">
-                    <span style="color:#666; font-size:13px;">暂无代理数据，请确保已配置代理且 FRPC 正在运行...</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>资源占用统计</h3>
-                <table>
-                    <tr><td width="30%">连续运行时间</td><td id="uptime">0</td></tr>
-                    <tr><td>实时内存占用</td><td id="mem-frpc">0 MB</td></tr>
-                </table>
-            </div>
-            
-            <div class="card">
-                <h3>FRP 官方 Dashboard</h3>
-                <p class="help-text">如需查看详细的内网穿透实时流量和代理规则，或使用 Store 功能进行管理，请访问 FRP 官方 Dashboard。</p>
-                <a href="http://127.0.0.1:7400" target="_blank" class="btn btn-success">打开官方 Dashboard</a>
-            </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+        <div class="collapse-header" id="guide-toggle">
+            <h2>📖 配置手册</h2>
+            <span class="collapse-arrow">▼</span>
         </div>
+        <div class="collapse-body" id="guide-body">
+            <div class="collapse-body-inner">
 
-        <!-- Config Section -->
-        <div id="config" class="section">
-            <div class="card">
-                <div class="flex-between">
-                    <div>
-                        <h3 style="margin-bottom: 5px;">FRPC 配置文件</h3>
-                        <span style="font-size: 12px; color: #888;">文件路径: conf/frpc.toml | 解析器: v0.69.1</span>
-                    </div>
-                    <button class="btn" onclick="saveConfig()">保存并热重启</button>
-                </div>
-                <p class="help-text" style="margin-top: 10px;">在此处修改配置，修改后点击右上角保存。遇到配置问题请查阅右上方的“配置文档手册”。</p>
-                <textarea id="frpc-config" spellcheck="false">加载中...</textarea>
-            </div>
-        </div>
-
-        <!-- Documentation Section -->
-        <div id="docs" class="section">
-            <div class="card docs-content">
-                <h2 style="color:#007aff; border-bottom:2px solid #eee; padding-bottom:10px;">📚 FRP 客户端全景配置手册</h2>
-                <p>整合：纯客户端基础配置、Store 持久化、宝塔面板多域名反代全解。</p>
-                
-                <h3 style="background:#f0f0f0; padding:8px; border-radius:4px; margin-top:20px;">一、 基础配置（全局区）</h3>
-                <p>基础配置必须放在配置文件的最顶部，不可被包含在任何 <code>[[proxies]]</code> 内部。</p>
-                <pre>
-serverAddr = "1.2.3.4"
-serverPort = 7000
-
+                <div class="guide-section">
+                    <h3>1. 基础配置</h3>
+                    <p>连接 FRP 服务端需配置以下参数：</p>
+                    <pre>serverAddr = "your-server.com"  # 服务器公网 IP 或域名
+serverPort = 7000               # 与服务端 bindPort 一致
 auth.method = "token"
-auth.token = "strong_token_here"
-
-transport.heartbeatInterval = 30
-transport.heartbeatTimeout = 90</pre>
-
-                <h3 style="background:#f0f0f0; padding:8px; border-radius:4px; margin-top:20px;">二、 Store 持久化配置 (v0.52+ 核心)</h3>
-                <div class="note-box">
-                    <b>🧠 一句话总结：</b><code>store</code> 是新版 FRP 的“记忆芯片”，配置它，你的客户端重启后不再“失忆”。用于保存 OIDC Token、访客端身份信息等。
+auth.token = "your_strong_token"</pre>
                 </div>
-                
-                <h4>1️⃣ 使用本地文件存储（推荐 & 最简单）</h4>
-                <p><b>如果不配置 store，重启 frpc 后可能需要重新认证。</b></p>
-                <pre>
-# 客户端本地存储配置
-[store]
-type = "local"
-# 本地文件路径（请确保 frpc 有权限读写此目录）
-localPath = "/data/adb/modules/CHERWIN_FRPC/conf/frpc_data"</pre>
-                <ul>
-                    <li>路径可以是相对路径或绝对路径，文件夹不存在时会自动创建。</li>
-                    <li>迁移设备时，拷贝此目录下的文件可保留会话状态。</li>
-                </ul>
 
-                <h4>2️⃣ 使用 Redis 存储（高可用/多实例场景）</h4>
-                <pre>
-[store]
-type = "redis"
-redisAddr = "127.0.0.1:6379"
-redisDB = 0
-redisPassword = "redis_password" # 无密码则注释
-redisPrefix = "frpc_client_01"   # Key前缀，区分不同客户端</pre>
-
-                <h3 style="background:#f0f0f0; padding:8px; border-radius:4px; margin-top:20px;">三、 常见代理配置大全</h3>
-                
-                <h4>1️⃣ 标准 HTTP 服务 & 多域名指向</h4>
-                <pre>
-[[proxies]]
-name = "web_main"
-type = "http"
-localIP = "127.0.0.1"
-localPort = 8055
-customDomains = ["app.example.com"]
-
-[[proxies]]
-name = "web_multi"
-type = "http"
-localIP = "127.0.0.1"
-localPort = 3000
-customDomains = ["www.example.com", "example.com"]</pre>
-                
-                <h4>2️⃣ HTTPS 服务与 TCP 端口转发</h4>
-                <pre>
-[[proxies]]
-name = "web_secure"
-type = "https"
-localIP = "127.0.0.1"
-localPort = 8443
-customDomains = ["secure.example.com"]
-
-[[proxies]]
-name = "ssh_server"
+                <div class="guide-section">
+                    <h3>2. 代理通道类型</h3>
+                    <p><strong>TCP</strong> — SSH、RDP、数据库等：</p>
+                    <pre>[[proxies]]
+name = "ssh"
 type = "tcp"
 localIP = "127.0.0.1"
 localPort = 22
 remotePort = 6000</pre>
-
-                <h3 style="background:#f0f0f0; padding:8px; border-radius:4px; margin-top:20px;">四、 宝塔面板 + 多域名 Web 反代实战</h3>
-                <div class="note-box">
-                    <b>🎯 整体架构：</b>浏览器 ➔ 80/443 (Nginx/Apache) ➔ frps (9080) ➔ frpc ➔ 内网服务<br>
-                    <b>✅ 优点：</b>不用修改系统保留端口、支持 SSL 证书、支持 WebSocket、支持无限域名绑定。
+                    <p><strong>UDP</strong> — DNS 解析、游戏等：</p>
+                    <pre>[[proxies]]
+name = "dns"
+type = "udp"
+localIP = "127.0.0.1"
+localPort = 53
+remotePort = 6001</pre>
+                    <p><strong>HTTP</strong> — Web 服务：</p>
+                    <pre>[[proxies]]
+name = "web"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 8080
+customDomains = ["www.example.com"]</pre>
+                    <p><strong>HTTPS</strong>：</p>
+                    <pre>[[proxies]]
+name = "web-https"
+type = "https"
+localIP = "127.0.0.1"
+localPort = 443
+customDomains = ["www.example.com"]
+[proxies.transport]
+tls.enable = true</pre>
+                    <p><strong>STCP</strong> — 需访问端也运行 frpc：</p>
+                    <pre>[[proxies]]
+name = "secret-ssh"
+type = "stcp"
+secretKey = "my-secret-key"
+localIP = "127.0.0.1"
+localPort = 22</pre>
+                    <p><strong>XTCP</strong> — 点对点穿透（两端直连，不经过服务端转发）：</p>
+                    <pre>[[proxies]]
+name = "p2p-ssh"
+type = "xtcp"
+secretKey = "my-secret-key"
+localIP = "127.0.0.1"
+localPort = 22</pre>
+                    <p><strong>SUDP</strong> — 安全 UDP 穿透：</p>
+                    <pre>[[proxies]]
+name = "secret-dns"
+type = "sudp"
+secretKey = "my-secret-key"
+localIP = "127.0.0.1"
+localPort = 53</pre>
                 </div>
 
-                <h4>1️⃣ 服务端 frps 配置（宝塔端）</h4>
-                <div class="warning-box">📌 <b>注意：</b>不要使用 80 / 443，这些端口应留给 Web 服务自身。</div>
-                <pre>
-bindPort = 7000
-vhostHTTPPort = 9080
-vhostHTTPSPort = 9443
-# ...鉴权配置略...</pre>
+                <div class="guide-section">
+                    <h3>3. 传输层配置</h3>
+                    <p>为代理通道启用加密和压缩：</p>
+                    <pre>[[proxies]]
+name = "ssh-secure"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000
 
-                <h4>2️⃣ Nginx 反向代理配置（必须）</h4>
-                <p>在宝塔创建站点（如 <code>app.example.com</code>），设置纯静态，进入 反向代理 -> 配置文件：</p>
-                <div class="warning-box">📌 <b>核心：</b>缺少 <code>Host</code> 头会导致 frps 返回 <b>404 powered by frp</b>。</div>
-                <pre>
+[proxies.transport]
+useEncryption = true
+useCompression = true</pre>
+                    <p>全局传输配置（影响所有代理）：</p>
+                    <pre>transport.tls.enable = true     # 全局启用 TLS
+transport.tls.serverName = "example.com"</pre>
+                </div>
+
+                <div class="guide-section">
+                    <h3>4. 插件配置</h3>
+                    <p><strong>static_file</strong> — 将目录暴露为 HTTP 文件服务：</p>
+                    <pre>[[proxies]]
+name = "file-server"
+type = "tcp"
+remotePort = 7500
+
+[proxies.plugin]
+type = "static_file"
+localPath = "/sdcard"
+stripPrefix = "/sdcard"</pre>
+                    <p><strong>socks5</strong> — SOCKS5 代理：</p>
+                    <pre>[[proxies]]
+name = "socks5"
+type = "tcp"
+remotePort = 10800
+
+[proxies.plugin]
+type = "socks5"
+username = "user"       # 可选
+password = "pass"       # 可选</pre>
+                    <p><strong>http_proxy</strong> — HTTP 正向代理：</p>
+                    <pre>[[proxies]]
+name = "http-proxy"
+type = "tcp"
+remotePort = 10801
+
+[proxies.plugin]
+type = "http_proxy"
+username = "user"       # 可选
+password = "pass"       # 可选</pre>
+                    <p><strong>unix_domain_socket</strong> — 转发 Unix Socket：</p>
+                    <pre>[[proxies]]
+name = "docker-sock"
+type = "tcp"
+remotePort = 7501
+
+[proxies.plugin]
+type = "unix_domain_socket"
+unixPath = "/var/run/docker.sock"</pre>
+                </div>
+
+                <div class="guide-section">
+                    <h3>5. Store 持久化（推荐）</h3>
+                    <p>FRP v0.52+ 支持 Store 模式，重启后自动恢复连接不掉线：</p>
+                    <pre>[[proxies]]
+name = "ssh-store"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000
+
+[proxies.transport]
+useEncryption = true
+useCompression = true
+
+[proxies.plugin]
+type = "static_file"
+localPath = "/sdcard"
+remotePort = 7500</pre>
+                    <p>Store 模式下 frpc 在本地持久化会话状态，服务端重启后自动重连。</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>6. 负载均衡 & 健康检查</h3>
+                    <p>配置多个相同服务端地址实现负载均衡：</p>
+                    <pre>[[proxies]]
+name = "web"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 8080
+customDomains = ["www.example.com"]
+
+[proxies.loadBalancer]
+group = "web-group"         # 同组内自动负载均衡
+groupKey = "my-key"         # 组密钥
+
+[proxies.healthCheck]
+type = "tcp"                # tcp 或 http
+intervalSeconds = 10        # 检查间隔
+timeoutSeconds = 3          # 超时
+maxFailed = 3               # 连续失败次数后摘除</pre>
+                </div>
+
+                <div class="guide-section">
+                    <h3>7. 域名泛解析 & 泛域名</h3>
+                    <p>泛域名解析（需要服务端支持）：</p>
+                    <pre>[[proxies]]
+name = "wildcard-http"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 8080
+customDomains = ["*.example.com"]   # 匹配所有子域名</pre>
+                </div>
+
+                <div class="guide-section">
+                    <h3>8. 宝塔 Nginx / Apache 反代</h3>
+                    <p>在服务端使用宝塔面板添加反代，将域名指向 FRP 服务端的 dashboard 或代理端口。</p>
+                    <p><strong>Nginx 反代配置（宝塔 → 网站 → 添加站点 → 设置 → 反向代理）：</strong></p>
+                    <pre># 宝塔面板自动生成，无需手动编辑以下代码
+# 目标 URL: http://127.0.0.1:7400
+# 发送域名: $host
+
+# 如需手动编辑 nginx 配置文件：
 location / {
-    proxy_pass http://127.0.0.1:9080;
-    
-    # 核心：传递真实域名，FRP 只认这个
+    proxy_pass http://127.0.0.1:7400;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-
-    # ✅ WebSocket 支持
+    proxy_buffering off;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
 }</pre>
+                    <p><strong>Apache 反代配置（宝塔 → 网站 → 设置 → 反向代理）：</strong></p>
+                    <pre># 宝塔面板操作路径相同
+# 目标 URL: http://127.0.0.1:7400
 
-                <h4>3️⃣ Apache 反向代理配置</h4>
-                <div class="warning-box">📌 <b>核心：</b>不写 <code>ProxyPreserveHost On</code> 必现 404。</div>
-                <pre>
-#PROXY-START/
-&lt;IfModule mod_proxy.c&gt;
-    ProxyRequests Off
-    SSLProxyEngine on
-
-    # ✅ 核心：传递真实域名
-    ProxyPreserveHost On
-
-    ProxyPass / http://127.0.0.1:9080/
-    ProxyPassReverse / http://127.0.0.1:9080/
-
-    # ✅ WebSocket 支持
-    RewriteEngine On
-    RewriteCond %{HTTP:Upgrade} websocket [NC]
-    RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?(.*)$ ws://127.0.0.1:9080/$1 [P,L]
-&lt;/IfModule&gt;
-#PROXY-END/</pre>
-
-                <h4>4️⃣ 常见排错清单</h4>
-                <table>
-                    <tr><th>错误现象</th><th>根本原因</th><th>解决方案</th></tr>
-                    <tr><td>404 powered by frp</td><td>Host 头丢失</td><td>检查 Nginx/Apache 中是否透传了 Host ($host)</td></tr>
-                    <tr><td>WebSocket 连不上</td><td>未开启 Upgrade</td><td>在反代配置文件中添加协议升级头配置</td></tr>
-                    <tr><td>HTTPS 无法访问</td><td>证书未配置</td><td>直接在宝塔站点中申请 Let's Encrypt，然后正常反代到 9080</td></tr>
-                    <tr><td>只能 HTTP 不能 HTTPS</td><td>端口未映射</td><td>检查服务端配置是否包含 vhostHTTPSPort</td></tr>
-                </table>
-                <div class="note-box" style="text-align:center; font-weight:bold; font-size:14px; margin-top:20px;">
-                    FRP 不认域名，只认 HTTP Host 头。<br>谁挡住了 Host，谁就是 404 的凶手。
+# 手动编辑 httpd 配置或 .htaccess：
+ProxyPreserveHost On
+ProxyPass / http://127.0.0.1:7400/
+ProxyPassReverse / http://127.0.0.1:7400/
+RequestHeader set X-Forwarded-Proto "https"
+RequestHeader set X-Forwarded-Port "443"</pre>
+                    <p><strong>HTTPS 证书（宝塔自动申请 Let's Encrypt）：</strong></p>
+                    <ul>
+                        <li>在宝塔「网站」→ 设置 → SSL → 申请 Let's Encrypt 免费证书</li>
+                        <li>勾选「强制 HTTPS」确保所有访问自动跳转 HTTPS</li>
+                        <li>FRP 服务端 dashboard 配置了 TLS 时，反代目标改为 <code>https://127.0.0.1:7443</code></li>
+                    </ul>
+                    <p><strong>反代 frpc 配置编辑器的 API（如需公网访问管理面板）：</strong></p>
+                    <pre># 仅限高级用户，建议通过 KernelSU WebView 管理
+# 服务端 nginx 反代到客户端 webServer.port=7400
+location /api/ {
+    proxy_pass http://127.0.0.1:7400/;
+    proxy_set_header Authorization "Basic $(echo -n admin:admin | base64)";
+}</pre>
                 </div>
-            </div>
-        </div>
 
-        <!-- Logs Section -->
-        <div id="logs" class="section">
-            <div class="card">
-                <div class="flex-between" style="margin-bottom: 10px;">
-                    <h3>运行日志</h3>
-                    <select id="log-selector" style="padding: 5px;" onchange="fetchLogs()">
-                        <option value="frpc">FRPC 进程日志 (详细)</option>
-                        <option value="service">面板服务日志</option>
-                    </select>
+                <div class="guide-section">
+                    <h3>9. 完整配置示例</h3>
+                    <pre>serverAddr = "your-server.com"
+serverPort = 7000
+auth.method = "token"
+auth.token = "your_strong_token"
+
+log.to = "console"
+log.level = "info"
+log.maxDays = 3
+
+webServer.addr = "0.0.0.0"
+webServer.port = 7400
+webServer.user = "admin"
+webServer.password = "admin"
+
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000
+
+[[proxies]]
+name = "http-web"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 8080
+customDomains = ["www.example.com"]
+
+[[proxies]]
+name = "file-server"
+type = "tcp"
+remotePort = 7500
+[proxies.plugin]
+type = "static_file"
+localPath = "/sdcard"</pre>
                 </div>
-                <div class="log-container" id="log-viewer">加载中...</div>
-                <div style="margin-top: 15px; text-align: right;">
-                    <button class="btn" onclick="fetchLogs()">刷新</button>
-                    <button class="btn btn-danger" onclick="clearLogs()">清空</button>
+
+                <div class="guide-section">
+                    <h3>10. 常见问题</h3>
+                    <ul>
+                        <li><strong>WebUI 无法打开：</strong> 从 KernelSU 模块列表点击模块的「WebUI ( < > )」按钮进入</li>
+                        <li><strong>状态一直"检测中"：</strong> 关闭页面重新点击 WebUI 按钮打开</li>
+                        <li><strong>配置保存失败：</strong> 检查 <code>/data/adb/modules/CHERWIN_FRPC/conf/</code> 目录权限</li>
+                        <li><strong>自动启动失败：</strong> 确保 <code>service.sh</code> 有执行权限（755）</li>
+                        <li><strong>端口冲突：</strong> 远程端口 <code>remotePort</code> 需在服务端未被占用</li>
+                        <li><strong>TOML 格式错误：</strong> 注意 <code>[[proxies]]</code> 使用双中括号，表使用 <code>[proxies.xxx]</code></li>
+                    </ul>
                 </div>
+
             </div>
         </div>
     </div>
-    
-    <div class="footer">
-        Powered by <a href="https://github.com/CHERWING/CHERWIN_FRPC" target="_blank">CHERWIN</a> | FRPC Kernel v0.69.1
+</div>
+
+<div id="tab-logs" class="tab-content">
+    <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button class="btn btn-secondary" data-log="frpc" style="flex:1">FRPC 日志</button>
+            <button class="btn btn-secondary active" data-log="service" style="flex:1">服务日志</button>
+            <button class="btn btn-secondary" id="btn-refresh-log" style="flex:initial;padding:8px 12px;">↻</button>
+            <button class="btn btn-danger" id="btn-clear-log" style="flex:initial;padding:8px 12px;">清空</button>
+        </div>
+        <div id="log-viewer">等待加载...</div>
     </div>
 </div>
 
 <script>
-    function switchTab(tabId) {
-        var navBtns = document.querySelectorAll('.nav button');
-        for (var i = 0; i < navBtns.length; i++) {
-            navBtns[i].classList.remove('active');
-        }
-        var target = document.querySelector('.nav button[data-tab="' + tabId + '"]');
-        if (target) target.classList.add('active');
-        var sections = document.querySelectorAll('.section');
-        for (var i = 0; i < sections.length; i++) {
-            sections[i].classList.remove('active');
-        }
-        document.getElementById(tabId).classList.add('active');
-        if (tabId === 'config') fetchConfig();
-        if (tabId === 'logs') fetchLogs();
-    }
+(function(){
+var It = null;
+(function detect(){
+    try {
+        if (typeof ksu !== 'undefined' && typeof ksu.exec === 'function') { It = ksu; }
+        else if (typeof ap !== 'undefined' && typeof ap.exec === 'function') { It = ap; }
+    } catch(e) {}
+})();
 
-    function renderProxies(proxies) {
-        const container = document.getElementById('proxy-status-container');
-        if (!proxies || proxies.length === 0) {
-            container.innerHTML = '<span style="color:#666; font-size:13px;">暂无代理数据，请确保已在配置中添加 [[proxies]] 且 FRPC 正在运行...</span>';
-            return;
-        }
+var MODDIR = "/data/adb/modules/CHERWIN_FRPC";
+var PID_FILE = MODDIR + "/run/frpc.pid";
+var CONF_FILE = MODDIR + "/conf/frpc.toml";
+var FRPC_LOG = MODDIR + "/log/frpc.log";
+var SRV_LOG = MODDIR + "/log/service.log";
+var BACKUP_FILE = "/data/local/tmp/.frpc_config_backup";
 
-        let html = '';
-        proxies.forEach(p => {
-            let badgeClass = 'status-unknown';
-            if (p.status === '在线') badgeClass = 'status-running';
-            if (p.status === '失败') badgeClass = 'status-stopped';
-            
-            html += `
-                <div class="proxy-item">
-                    <span class="proxy-name">${p.name}</span>
-                    <span class="status-badge ${badgeClass}">${p.status}</span>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    }
+var _marker = 0;
+function $(id) { return document.getElementById(id); }
 
-    function updateStatus() {
-        fetch('/cgi-bin/api.sh?action=status')
-            .then(r => r.json())
-            .then(data => {
-                // Update Process Status
-                const pBadge = document.getElementById('frpc-status');
-                if (data.status === 'running') {
-                    pBadge.className = 'status-badge status-running';
-                    pBadge.innerText = '运行中';
-                } else {
-                    pBadge.className = 'status-badge status-stopped';
-                    pBadge.innerText = '已停止';
-                }
-                
-                // Update Server Connection Status
-                const sBadge = document.getElementById('server-status');
-                if (data.server_status === '已连接') {
-                    sBadge.className = 'status-badge status-running';
-                } else if (data.server_status === '连接异常') {
-                    sBadge.className = 'status-badge status-stopped';
-                } else if (data.server_status === '连接中...') {
-                    sBadge.className = 'status-badge status-warning';
-                } else {
-                    sBadge.className = 'status-badge status-stopped';
-                }
-                sBadge.innerText = data.server_status;
+function toast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    $('toast-wrap').appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3000);
+}
 
-                document.getElementById('frpc-pid').innerText = data.pid;
-                document.getElementById('uptime').innerText = data.uptime;
-                document.getElementById('mem-frpc').innerText = data.mem;
+function sh(cmd) {
+    return new Promise(function(resolve){
+        if (!It) { resolve({code:-1,out:''}); return; }
 
-                // Render specific proxies
-                renderProxies(data.proxies);
-            })
-            .catch(e => console.error(e));
-    }
+        var timedOut = false;
+        var timer = setTimeout(function(){
+            timedOut = true;
+            resolve({code:-1,out:'', timedout:true});
+        }, 8000);
 
-    function controlAction(action) {
-        fetch(`/cgi-bin/api.sh?action=${action}`)
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                updateStatus();
-            })
-            .catch(e => showToast('操作失败', 'error'));
-    }
+        var done = function(code, stdout) {
+            if (timedOut) return;
+            clearTimeout(timer);
+            resolve({code: code||0, out: (stdout||'').replace(/\r/g,'')});
+        };
 
-    function fetchConfig() {
-        fetch('/cgi-bin/api.sh?action=get_config')
-            .then(r => r.json())
-            .then(data => {
-                const decodedStr = decodeURIComponent(escape(atob(data.config)));
-                document.getElementById('frpc-config').value = decodedStr;
-            })
-            .catch(e => console.error(e));
-    }
-
-    function saveConfig() {
-        const configText = document.getElementById('frpc-config').value;
-        fetch('/cgi-bin/save_config.sh', {
-            method: 'POST',
-            body: configText,
-            headers: {
-                'Content-Type': 'text/plain'
+        try {
+            var ret = It.exec(cmd);
+            if (ret && typeof ret.then === 'function') {
+                ret.then(function(r){
+                    done(r.code || r.exitCode, r.stdout || r.out || r.output);
+                }).catch(function(){ done(-1,''); });
+                return;
             }
-        })
-        .then(r => r.json())
-        .then(data => {
-            showToast(data.message, data.success ? 'success' : 'error');
-            if (data.success) controlAction('restart');
-        })
-        .catch(e => showToast('保存失败', 'error'));
-    }
+            if (ret && typeof ret === 'object' && ret.exitCode !== undefined) {
+                done(ret.exitCode, ret.stdout || ret.out);
+                return;
+            }
+        } catch(e) {}
 
-    function fetchLogs() {
-        const type = document.getElementById('log-selector').value;
-        fetch(`/cgi-bin/api.sh?action=get_logs&type=${type}`)
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('log-viewer').innerText = decodeURIComponent(escape(atob(data.logs)));
-                document.getElementById('log-viewer').scrollTop = document.getElementById('log-viewer').scrollHeight;
-            })
-            .catch(e => console.error(e));
-    }
+        try {
+            var cb = '_c' + (++_marker);
+            window[cb] = function(code, out, err){ done(code, out || err); };
+            It.exec(cmd, '{}', cb);
+            return;
+        } catch(e) {}
 
-    function clearLogs() {
-        fetch('/cgi-bin/api.sh?action=clear_logs')
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                fetchLogs();
-            })
-            .catch(e => showToast('清空失败', 'error'));
-    }
+        try {
+            It.exec(cmd, done);
+            return;
+        } catch(e) {}
 
-    function showToast(msg, type) {
-        var el = document.getElementById('toast');
-        if (!el) return;
-        el.className = 'toast toast-' + (type || 'info') + ' show';
-        el.innerText = msg;
-        clearTimeout(el._timer);
-        el._timer = setTimeout(function() { el.classList.remove('show'); }, 3000);
-    }
+        try {
+            var cb = '_c' + (++_marker);
+            window[cb] = function(code, out){ done(code, out); };
+            It.exec(cmd, cb);
+            return;
+        } catch(e) {}
 
-    // Auto update status every 3 seconds
-    setInterval(updateStatus, 3000);
-    updateStatus(); // Initial fetch
+        done(-1,'');
+    });
+}
+
+function readFile(path) {
+    return sh('cat "'+path+'" 2>/dev/null | base64 || true');
+}
+
+function b64decode(b64) {
+    try {
+        var binary = atob(b64.replace(/\s/g,''));
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new TextDecoder().decode(bytes);
+    } catch(e) { return ''; }
+}
+
+function backupConfig() {
+    return sh('cp "'+CONF_FILE+'" "'+BACKUP_FILE+'" 2>/dev/null || true');
+}
+
+function b64encode(str) {
+    var encoder = new TextEncoder();
+    var bytes = encoder.encode(str);
+    var binary = '';
+    for (var i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+function isRunning() {
+    return sh('[ -f "'+PID_FILE+'" ] && cat "'+PID_FILE+'" || true');
+}
+
+async function refreshStatus() {
+    $('status-text').textContent = '检测中...';
+    var r = await isRunning();
+    var pid = (r.out || '').trim();
+    var running = pid && /^\d+$/.test(pid);
+    document.body.className = running ? 'running' : 'stopped';
+    $('status-text').textContent = running ? '运行中' : '已停止';
+    if (running) {
+        $('pid-badge').textContent = 'PID: '+pid;
+        $('pid-badge').classList.remove('hidden');
+    } else {
+        $('pid-badge').classList.add('hidden');
+    }
+    return running;
+}
+
+async function refreshServer() {
+    $('server-status').textContent = '检测中...';
+    var r = await sh('grep -E "login to server success|connect to server error|login to server failed|i/o timeout|connection refused" "'+FRPC_LOG+'" 2>/dev/null | tail -1');
+    var log = r.out || '';
+    if (log.indexOf('success') >= 0) $('server-status').textContent = '已连接';
+    else if (log.indexOf('error') >= 0 || log.indexOf('failed') >= 0 || log.indexOf('timeout') >= 0 || log.indexOf('refused') >= 0) $('server-status').textContent = '连接异常';
+    else if (log.length > 0) $('server-status').textContent = '连接中...';
+    else $('server-status').textContent = '无数据';
+}
+
+async function refreshProxy() {
+    $('proxy-list').innerHTML = '<span style="color:#8e8e93;font-size:13px;">检测中...</span>';
+    var r = await sh('grep -E "^name = " "'+CONF_FILE+'" 2>/dev/null | head -20');
+    var names = (r.out || '').trim().split('\n').filter(Boolean).map(function(l){ return l.replace(/^name = /,'').replace(/"/g,'').trim(); });
+    if (names.length === 0) { $('proxy-list').innerHTML = '<span style="color:#8e8e93;font-size:13px;">暂未配置代理</span>'; return; }
+    var html = '';
+    for (var i=0;i<names.length;i++) {
+        var nr = await sh('grep -F "'+names[i]+'" "'+FRPC_LOG+'" 2>/dev/null | tail -1');
+        var ok = (nr.out || '').indexOf('success') >= 0;
+        var badge = ok ? 'badge-ok' : 'badge-fail';
+        var label = ok ? '在线' : '离线';
+        html += '<span class="proxy-item"><span class="name">'+names[i]+'</span><span class="badge '+badge+'">'+label+'</span></span>';
+    }
+    $('proxy-list').innerHTML = html || '<span style="color:#8e8e93;font-size:13px;">无代理数据</span>';
+}
+
+async function refreshUptime() {
+    var r = await isRunning();
+    var pid = (r.out || '').trim();
+    if (pid && /^\d+$/.test(pid)) {
+        var et = await sh('echo $(( $(date +%s) - $(stat -c %Y "'+PID_FILE+'") )) | awk \'{s=$1; d=int(s/86400); s%=86400; h=int(s/3600); s%=3600; m=int(s/60); s%=60; if(d) printf "%dd ",d; printf "%02d:%02d:%02d",h,m,s}\'');
+        $('uptime').textContent = (et.out || '').trim() || '-';
+        var m = await sh('ps -o rss= -p '+pid+' 2>/dev/null | tr -d " " || cat /proc/'+pid+'/status 2>/dev/null | grep VmRSS | awk \'{print $2}\' || ps '+pid+' 2>/dev/null | awk \'$1~/^[0-9]/{print $4}\'');
+        var mem = (m.out || '').trim();
+        if (/^[0-9]+$/.test(mem)) {
+            $('mem').textContent = mem + ' KB';
+        } else {
+            $('mem').textContent = '-';
+        }
+    } else {
+        $('uptime').textContent = '-';
+        $('mem').textContent = '-';
+    }
+}
+
+async function refreshAll() {
+    var running = await refreshStatus();
+    if (running) {
+        await refreshServer();
+        await refreshProxy();
+        await refreshUptime();
+    }
+}
+
+$('btn-start').onclick = async function(){
+    var check = await isRunning();
+    var pid = (check.out || '').trim();
+    if (pid && /^\d+$/.test(pid)) {
+        toast('已在运行中 (PID: '+pid+')');
+        return;
+    }
+    toast('正在启动...');
+    await sh('nohup '+MODDIR+'/bin/frpc -c "'+CONF_FILE+'" > "'+FRPC_LOG+'" 2>&1 & echo $! > "'+PID_FILE+'"');
+    var r = await readFile(PID_FILE);
+    var pid = b64decode(r.out || '').trim();
+    if (pid) {
+        await sh('sed -i "/^description=/c\\description=▶️ 运行中  (PID: '+pid+')" "'+MODDIR+'/module.prop"');
+        $('status-text').textContent = '运行中';
+        $('pid-badge').textContent = 'PID: '+pid;
+        $('pid-badge').classList.remove('hidden');
+        document.body.className = 'running';
+    }
+    toast('已启动');
+    refreshAll();
+};
+
+$('btn-stop').onclick = async function(){
+    toast('正在停止...');
+    await sh('if [ -f "'+PID_FILE+'" ]; then kill $(cat "'+PID_FILE+'"); rm -f "'+PID_FILE+'"; fi');
+    await sh('sed -i "/^description=/c\\description=⏹️ 已停止" "'+MODDIR+'/module.prop"');
+    $('status-text').textContent = '已停止';
+    $('pid-badge').classList.add('hidden');
+    document.body.className = 'stopped';
+    toast('已停止');
+    refreshAll();
+};
+
+$('btn-dashboard').onclick = function(){
+    window.open('http://127.0.0.1:7400','_blank');
+};
+
+var _configIsTemplate = false;
+
+async function loadConfig() {
+    $('config-editor').value = '加载中...';
+    var r = await readFile(CONF_FILE);
+    _configIsTemplate = false;
+    var content = b64decode(r.out || '').trim();
+    if (!content) {
+        r = await readFile(MODDIR + '/conf/frpc.toml.template');
+        content = b64decode(r.out || '').trim();
+        _configIsTemplate = true;
+    }
+    $('config-editor').value = content || '# 配置文件为空';
+    var hint = $('config-template-hint');
+    if (hint) hint.style.display = _configIsTemplate ? 'block' : 'none';
+}
+
+$('btn-save-config').onclick = async function(){
+    var content = $('config-editor').value;
+    var b64 = b64encode(content);
+    await sh('echo ' + b64 + ' | base64 -d > "' + CONF_FILE + '"');
+    toast('配置已保存');
+    await sh('if [ -f "'+PID_FILE+'" ]; then kill $(cat "'+PID_FILE+'"); rm -f "'+PID_FILE+'"; fi');
+    await sh('nohup '+MODDIR+'/bin/frpc -c "'+CONF_FILE+'" > "'+FRPC_LOG+'" 2>&1 & echo $! > "'+PID_FILE+'"');
+    toast('已重启');
+    // 等待 frpc 成功连接后备份（最多 20s）
+    for (var i = 0; i < 4; i++) {
+        await sh('sleep 5');
+        var c = await sh('grep -q "login to server success" "'+FRPC_LOG+'" 2>/dev/null && echo ok || true');
+        if ((c.out || '').trim() === 'ok') {
+            await backupConfig();
+            break;
+        }
+    }
+    refreshAll();
+};
+
+var guideOpen = false;
+$('guide-toggle').onclick = function(){
+    guideOpen = !guideOpen;
+    this.classList.toggle('open');
+    var body = $('guide-body');
+    if (guideOpen) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+    } else {
+        body.style.maxHeight = '0';
+    }
+};
+
+var logType = 'service';
+async function loadLog() {
+    $('log-viewer').textContent = '读取中...';
+    var path = logType === 'frpc' ? FRPC_LOG : SRV_LOG;
+    var r = await sh('tail -n 100 "'+path+'" 2>/dev/null || echo "暂无日志"');
+    $('log-viewer').textContent = r.out || '暂无日志';
+    $('log-viewer').scrollTop = $('log-viewer').scrollHeight;
+}
+
+var _defer = null;
+document.querySelectorAll('[data-tab]').forEach(function(b){
+    b.onclick = function(){
+        document.querySelectorAll('.tab-btn, .tab-content').forEach(function(e){ e.classList.remove('active'); });
+        b.classList.add('active');
+        $('tab-'+b.dataset.tab).classList.add('active');
+        if (_defer) clearTimeout(_defer);
+        _defer = setTimeout(function(){
+            if (b.dataset.tab === 'config') loadConfig();
+            if (b.dataset.tab === 'logs') loadLog();
+        }, 200);
+    };
+});
+
+document.querySelectorAll('[data-log]').forEach(function(b){
+    b.onclick = function(){
+        document.querySelectorAll('[data-log]').forEach(function(e){ e.classList.remove('active'); });
+        b.classList.add('active');
+        logType = b.dataset.log;
+        loadLog();
+    };
+});
+
+$('btn-refresh-log').onclick = loadLog;
+$('btn-clear-log').onclick = async function(){
+    await sh('> "'+FRPC_LOG+'"; > "'+SRV_LOG+'"');
+    toast('日志已清空');
+    loadLog();
+};
+
+function init() {
+    if (!It) {
+        $('status-text').textContent = '请从 KernelSU 模块内打开';
+        return;
+    }
+    $('status-text').textContent = '初始化...';
+    setTimeout(function(){
+        refreshAll();
+        setInterval(refreshAll, 6000);
+    }, 800);
+}
+
+init();
+})();
 </script>
-
-<div id="toast" class="toast"></div>
 </body>
 </html>

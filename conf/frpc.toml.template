@@ -1,0 +1,28 @@
+# 连接服务端配置
+serverAddr = "127.0.0.1" # 请将此处的IP替换为您服务器的真实公网IP
+serverPort = 7000
+
+# 身份验证（与服务端保持一致）
+auth.method = "token"
+auth.token = "your_strong_token_here"
+
+# 日志配置 (增加详细程度)
+log.to = "console"
+log.level = "debug"
+log.maxDays = 3
+
+# 客户端本地 Web 控制台配置 (FRP 原生 Dashboard)
+webServer.addr = "0.0.0.0"
+webServer.port = 7400
+webServer.user = "admin"
+webServer.password = "admin"
+
+# --- 下面是代理配置示例，仅取消注释带有配置项的行 ---
+
+# 示例：SSH 代理
+# [[proxies]]
+# name = "ssh"
+# type = "tcp"
+# localIP = "127.0.0.1"
+# localPort = 22
+# remotePort = 6000

@@ -1,0 +1,10 @@
+bin/* binary
+*.template text eol=lf
+*.sh text eol=lf
+*.toml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.prop text eol=lf

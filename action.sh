@@ -1,5 +1,6 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
+[ -d "$MODDIR/conf" ] || MODDIR="/data/adb/modules/CHERWIN_FRPC"
 MODID=CHERWIN_FRPC
 PID_FILE="$MODDIR/run/frpc.pid"
 CONF_FILE="$MODDIR/conf/frpc.toml"
@@ -26,6 +27,13 @@ toggle_frpc() {
         local new_pid=$!
         echo $new_pid > "$PID_FILE"
         update_description "▶️ 运行中 (PID: $new_pid)"
+        for i in 1 2 3 4 5 6; do
+            if grep -q "login to server success" "$LOG_FILE" 2>/dev/null; then
+                cp "$CONF_FILE" /data/local/tmp/.frpc_config_backup 2>/dev/null
+                break
+            fi
+            sleep 5
+        done
     fi
 }
 
