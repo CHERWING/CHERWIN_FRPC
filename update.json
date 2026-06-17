@@ -1,6 +1,6 @@
 {
-  "version": "v1.2.0",
-  "versionCode": 120,
-  "zipUrl": "https://github.com/CHERWING/CHERWIN_FRPC/releases/download/v1.2.0/CHERWIN_FRPC_magisk_module.zip",
+  "version": "v1.2.1",
+  "versionCode": 121,
+  "zipUrl": "https://github.com/CHERWING/CHERWIN_FRPC/releases/download/v1.2.1/CHERWIN_FRPC_magisk_module.zip",
   "changelog": "https://raw.githubusercontent.com/CHERWING/CHERWIN_FRPC/main/CHANGELOG.md"
 }

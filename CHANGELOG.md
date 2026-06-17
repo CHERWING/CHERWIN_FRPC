@@ -1,5 +1,10 @@
 # 更新日志 (Changelog)
 
+## v1.2.1
+* 🧹 新增卸载脚本 uninstall.sh，卸载时自动停止 frpc 并清理备份文件
+* 🐛 修复 WebUI 配置手册折叠样式
+* 📄 更新 README 文档
+
 ## v1.2.0
 * 🛡️ 配置保留机制：刷写更新不再丢失 frpc.toml，WebUI 保存/启动时自动备份到 /data/local/tmp/
 * 🔄 开机配置恢复：service.sh 开机时自动检测备份并还原，确保配置不丢失
