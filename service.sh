@@ -59,6 +59,14 @@ start_httpd() {
     fi
 }
 
+# Wait for network
+for i in 1 2 3 4 5 6 7 8; do
+    if getprop net.dns1 >/dev/null 2>&1 && [ -n "$(getprop net.dns1)" ]; then
+        break
+    fi
+    sleep 2
+done
+
 start_frpc
 start_httpd
 
