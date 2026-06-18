@@ -41,7 +41,7 @@ ui_print " ****************************************************"
 ui_print " "
 ui_print " ===================================================="
 ui_print "  > 模块名称: CHERWIN FRPC 客户端"
-ui_print "  > 模块版本: v1.2.1 (核心 v0.69.1)"
+ui_print "  > 模块版本: v1.2.2 (核心 v0.69.1)"
 ui_print "  > 模块作者: CHERWIN"
 ui_print "  > 设备架构: $ARCH_NAME"
 ui_print "  > 支持面板: KernelSU / Magisk"
@@ -67,14 +67,22 @@ else
 fi
 
 ui_print " [3/5] [*] 正在配置文件与目录权限..."
+SETTINGS_BACKUP="/data/local/tmp/.frpc_settings_backup"
+if [ -f "$SETTINGS_BACKUP" ]; then
+    cp "$SETTINGS_BACKUP" "$MODDIR/conf/settings.conf" 2>/dev/null || cat "$SETTINGS_BACKUP" > "$MODDIR/conf/settings.conf" 2>/dev/null
+    ui_print "  > 已恢复模块设置备份"
+else
+    ui_print "  > 使用默认模块设置"
+fi
+
+ui_print " [4/5] [+] 设置脚本权限..."
 set_perm_recursive $MODDIR 0 0 0755 0644
 set_perm_recursive $MODDIR/bin 0 0 0755 0755
-set_perm $MODDIR/action.sh 0 0 0755 0755
-set_perm $MODDIR/service.sh 0 0 0755 0755
+for f in action.sh service.sh start.sh stop.sh restart.sh; do
+    set_perm "$MODDIR/$f" 0 0 0755 0755
+done
 sleep 1
 
-ui_print " [4/5] [+] 权限设置完成！"
-ui_print " "
 ui_print " [5/5] [+] 安装大功告成！"
 ui_print " ----------------------------------------------------"
 ui_print " ----------------------------------------------------"

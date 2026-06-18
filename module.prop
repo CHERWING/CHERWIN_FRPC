@@ -1,7 +1,7 @@
 id=CHERWIN_FRPC
 name=CHERWIN_FRPC 内网穿透客户端
-version=v1.2.1
-versionCode=121
+version=v1.2.2
+versionCode=122
 author=CHERWIN
 description=加载中...
 updateJson=https://raw.githubusercontent.com/CHERWING/CHERWIN_FRPC/main/update.json

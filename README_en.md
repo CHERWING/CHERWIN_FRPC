@@ -68,7 +68,8 @@ A: This won't happen with v1.2.0+. If upgrading from an older version, you'll ne
 
 ## Changelog
 
-- **v1.2.1** — Added uninstall.sh, various fixes
+- **v1.2.2** — Independent start/stop/restart scripts, loginFailExit fix, port release fix, instant watchdog restart, proxy status fix, WebUI settings page, scheduler, network guard, battery saver
+- **v1.2.1** — Added uninstall.sh, scheduler, network check, self-heal, accurate proxy status, WebUI settings page, auto-toggle start/stop button
 - **v1.2.0** — Config preservation mechanism, auto-recovery at boot, first-install template loading, multi-fallback memory reading, multiple bug fixes
 - **v1.1.0** — WebUI rewritten: uses `ksu.exec()` API, iOS-style UI, built-in config guide, base64 config saving
 - **v1.0.0** — Initial release: FRPC core v0.69.1, WebUI control panel, Store persistence support

@@ -59,6 +59,19 @@ textarea { width: 100%; height: 260px; padding: 10px; border: 1px solid #e5e5ea;
 .guide-section ul { padding-left: 18px; }
 .guide-section pre { background: #f2f2f7; padding: 10px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 8px 0; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
 .guide-section code { background: #f2f2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+.setting-group { margin-bottom: 16px; }
+.setting-group h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #007aff; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 13px; color: #1c1c1e; flex: 1; }
+.setting-input { width: 80px; padding: 6px 8px; border: 1px solid #e5e5ea; border-radius: 6px; font-size: 13px; text-align: center; }
+.setting-input-wide { width: 100px; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e5e5ea; border-radius: 24px; transition: 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.2s; }
+.toggle-switch input:checked + .toggle-slider { background: #34c759; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 </style>
 </head>
 <body class="stopped">
@@ -66,7 +79,7 @@ textarea { width: 100%; height: 260px; padding: 10px; border: 1px solid #e5e5ea;
 <div id="toast-wrap" class="toast-wrap"></div>
 
 <div class="header-title">CHERWIN FRPC</div>
-<div class="header-sub">模块 v1.2.1 | 核心 v0.69.1</div>
+<div class="header-sub">模块 v1.2.2 | 核心 v0.69.1</div>
 
 <div class="status-line" id="status-line">
     <span class="dot-wrap"><span class="dot"></span></span>
@@ -76,13 +89,15 @@ textarea { width: 100%; height: 260px; padding: 10px; border: 1px solid #e5e5ea;
 </div>
 
 <div class="btn-row">
-    <button class="btn btn-primary" id="btn-start">▶ 启 动</button>
-    <button class="btn btn-danger" id="btn-stop">■ 停 止</button>
+    <button class="btn btn-primary hidden" id="btn-start">▶ 启 动</button>
+    <button class="btn btn-danger hidden" id="btn-stop">■ 停 止</button>
+    <button class="btn btn-secondary hidden" id="btn-restart">↻ 重 启</button>
 </div>
 
 <div class="tab-bar">
     <button class="tab-btn active" data-tab="status">状态</button>
     <button class="tab-btn" data-tab="config">配置</button>
+    <button class="tab-btn" data-tab="settings">模块设置</button>
     <button class="tab-btn" data-tab="logs">日志</button>
 </div>
 
@@ -401,6 +416,94 @@ localPath = "/sdcard"</pre>
     </div>
 </div>
 
+<div id="tab-settings" class="tab-content">
+    <div class="card">
+        <h2>定时运行</h2>
+        <p style="font-size:12px;color:#8e8e93;margin:-8px 0 12px;">在指定时间段内自动运行 frpc</p>
+        <div class="setting-group">
+            <div class="setting-row">
+                <span class="setting-label">开启定时</span>
+                <label class="toggle-switch"><input type="checkbox" id="sched-enabled"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">开始时间</span>
+                <input class="setting-input setting-input-wide" type="text" id="sched-start" value="08:00" placeholder="HH:MM">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">结束时间</span>
+                <input class="setting-input setting-input-wide" type="text" id="sched-end" value="22:00" placeholder="HH:MM">
+            </div>
+        </div>
+        <h2>运行配置</h2>
+        <div class="setting-group">
+            <div class="setting-row">
+                <span class="setting-label">检查间隔（秒）</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">运行中每隔多久检测一次调度与网络</span>
+                <input class="setting-input" type="number" id="check-interval" value="60" min="10">
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">时段外最长睡眠（秒）</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">非运行时段最多休眠多久再检查</span>
+                <input class="setting-input" type="number" id="sleep-max" value="3600" min="60">
+            </div>
+        </div>
+        <h2>保护与恢复</h2>
+        <div class="setting-group">
+            <div class="setting-row">
+                <span class="setting-label">网络守卫</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">断网自动停止，恢复自动启动</span>
+                <label class="toggle-switch"><input type="checkbox" id="net-guard"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">故障重启</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">连续连接失败自动重启 frpc</span>
+                <label class="toggle-switch"><input type="checkbox" id="fault-restart"><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+        <h2>低电量保护</h2>
+        <div class="setting-group">
+            <div class="setting-row">
+                <span class="setting-label">开启保护</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">电量低于阈值且未充电时自动停止</span>
+                <label class="toggle-switch"><input type="checkbox" id="battery-protect"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">最低电量（%）</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">低于此值且未充电时触发保护</span>
+                <input class="setting-input" type="number" id="battery-level" value="20" min="5" max="50">
+            </div>
+        </div>
+        <button class="btn btn-primary" id="btn-save-settings" style="margin-top:8px;">保存模块设置</button>
+        <div style="margin-top:16px;background:#f2f2f7;border-radius:10px;padding:4px 0;font-size:12px;color:#3a3a3c;">
+            <div style="padding:12px 14px 6px;font-weight:700;font-size:13px;">功能说明</div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">定时运行</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">开启后每天在指定时段内自动运行 frpc，时段外自动停止。例如设 08:00–22:00，则每天 8:00 启动、22:00 停止。</div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">检查间隔</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">定时运行时段内每隔指定秒数检测一次时间与网络状态。设 60 则每分钟检查一轮。</div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">时段外最长睡眠</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">非运行时段休眠指定秒数后再检查，避免高频轮询耗电。设 3600（1 小时）则每小时看一次时间。</div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">网络守卫</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">运行时检测到网络不通自动停止 frpc；网络恢复后自动启动。</div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">故障重启</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">持续监控 frpc 日志，连续 5 次连接错误时自动停止→启动进行恢复。</div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #e5e5ea;">
+                <div style="font-weight:600;color:#007aff;">低电量保护</div>
+                <div style="margin:2px 0 6px;line-height:1.6;">电池低于设定阈值且未充电时自动停止 frpc 以节省电量。</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="tab-logs" class="tab-content">
     <div class="card">
         <div style="display:flex;gap:8px;margin-bottom:10px;">
@@ -538,6 +641,9 @@ async function refreshStatus() {
     } else {
         $('pid-badge').classList.add('hidden');
     }
+    $('btn-start').classList.toggle('hidden', running);
+    $('btn-stop').classList.toggle('hidden', !running);
+    $('btn-restart').classList.toggle('hidden', !running);
     return running;
 }
 
@@ -545,21 +651,26 @@ async function refreshServer() {
     $('server-status').textContent = '检测中...';
     var r = await sh('grep -E "login to server success|connect to server error|login to server failed|i/o timeout|connection refused" "'+FRPC_LOG+'" 2>/dev/null | tail -1');
     var log = r.out || '';
-    if (log.indexOf('success') >= 0) $('server-status').textContent = '已连接';
+    var connected = log.indexOf('success') >= 0;
+    if (connected) $('server-status').textContent = '已连接';
     else if (log.indexOf('error') >= 0 || log.indexOf('failed') >= 0 || log.indexOf('timeout') >= 0 || log.indexOf('refused') >= 0) $('server-status').textContent = '连接异常';
     else if (log.length > 0) $('server-status').textContent = '连接中...';
     else $('server-status').textContent = '无数据';
+    return connected;
 }
 
-async function refreshProxy() {
+async function refreshProxy(serverConnected) {
     $('proxy-list').innerHTML = '<span style="color:#8e8e93;font-size:13px;">检测中...</span>';
     var r = await sh('grep -E "^name = " "'+CONF_FILE+'" 2>/dev/null | head -20');
     var names = (r.out || '').trim().split('\n').filter(Boolean).map(function(l){ return l.replace(/^name = /,'').replace(/"/g,'').trim(); });
     if (names.length === 0) { $('proxy-list').innerHTML = '<span style="color:#8e8e93;font-size:13px;">暂未配置代理</span>'; return; }
     var html = '';
     for (var i=0;i<names.length;i++) {
-        var nr = await sh('grep -F "'+names[i]+'" "'+FRPC_LOG+'" 2>/dev/null | tail -1');
-        var ok = (nr.out || '').indexOf('success') >= 0;
+        var ok = false;
+        if (serverConnected) {
+            var nr = await sh('grep -F "'+names[i]+'" "'+FRPC_LOG+'" 2>/dev/null | tail -1');
+            ok = (nr.out || '').indexOf('success') >= 0;
+        }
         var badge = ok ? 'badge-ok' : 'badge-fail';
         var label = ok ? '在线' : '离线';
         html += '<span class="proxy-item"><span class="name">'+names[i]+'</span><span class="badge '+badge+'">'+label+'</span></span>';
@@ -589,8 +700,8 @@ async function refreshUptime() {
 async function refreshAll() {
     var running = await refreshStatus();
     if (running) {
-        await refreshServer();
-        await refreshProxy();
+        var connected = await refreshServer();
+        await refreshProxy(connected);
         await refreshUptime();
     }
 }
@@ -620,6 +731,7 @@ $('btn-start').onclick = async function(){
 $('btn-stop').onclick = async function(){
     toast('正在停止...');
     await sh('if [ -f "'+PID_FILE+'" ]; then kill $(cat "'+PID_FILE+'"); rm -f "'+PID_FILE+'"; fi');
+    await sh('for i in 1 2 3 4 5; do grep -q ":1CE8" /proc/net/tcp 2>/dev/null || break; sleep 1; done');
     await sh('sed -i "/^description=/c\\description=⏹️ 已停止" "'+MODDIR+'/module.prop"');
     $('status-text').textContent = '已停止';
     $('pid-badge').classList.add('hidden');
@@ -630,6 +742,21 @@ $('btn-stop').onclick = async function(){
 
 $('btn-dashboard').onclick = function(){
     window.open('http://127.0.0.1:7400','_blank');
+};
+
+$('btn-restart').onclick = async function(){
+    toast('正在重启...');
+    await sh('if [ -f "'+PID_FILE+'" ]; then kill $(cat "'+PID_FILE+'"); rm -f "'+PID_FILE+'"; fi');
+    await sh('for i in 1 2 3 4 5; do grep -q ":1CE8" /proc/net/tcp 2>/dev/null || break; sleep 1; done');
+    await sh('sed -i "/^description=/c\\description=⏹️ 已停止" "'+MODDIR+'/module.prop"');
+    await sh('nohup '+MODDIR+'/bin/frpc -c "'+CONF_FILE+'" > "'+FRPC_LOG+'" 2>&1 & echo $! > "'+PID_FILE+'"');
+    var r = await readFile(PID_FILE);
+    var pid = b64decode(r.out || '').trim();
+    if (pid) {
+        await sh('sed -i "/^description=/c\\description=▶️ 运行中  (PID: '+pid+')" "'+MODDIR+'/module.prop"');
+    }
+    toast('已重启');
+    refreshAll();
 };
 
 var _configIsTemplate = false;
@@ -655,6 +782,7 @@ $('btn-save-config').onclick = async function(){
     await sh('echo ' + b64 + ' | base64 -d > "' + CONF_FILE + '"');
     toast('配置已保存');
     await sh('if [ -f "'+PID_FILE+'" ]; then kill $(cat "'+PID_FILE+'"); rm -f "'+PID_FILE+'"; fi');
+    await sh('for i in 1 2 3 4 5; do grep -q ":1CE8" /proc/net/tcp 2>/dev/null || break; sleep 1; done');
     await sh('nohup '+MODDIR+'/bin/frpc -c "'+CONF_FILE+'" > "'+FRPC_LOG+'" 2>&1 & echo $! > "'+PID_FILE+'"');
     toast('已重启');
     // 等待 frpc 成功连接后备份（最多 20s）
@@ -690,6 +818,46 @@ async function loadLog() {
     $('log-viewer').scrollTop = $('log-viewer').scrollHeight;
 }
 
+var SETTINGS_FILE = MODDIR + '/conf/settings.conf';
+
+function s(v) { return (v||'').trim(); }
+
+async function loadSettings() {
+    var r = await sh('cat "'+SETTINGS_FILE+'" 2>/dev/null || true');
+    var map = {};
+    (r.out||'').split('\n').forEach(function(l){
+        var m = l.match(/^([A-Z_]+)=(.*)$/);
+        if (m) map[m[1]] = m[2];
+    });
+    $('sched-enabled').checked = (map.SCHEDULER_ENABLED || '0') === '1';
+    $('sched-start').value = map.SCHEDULER_START || '08:00';
+    $('sched-end').value = map.SCHEDULER_END || '22:00';
+    $('check-interval').value = map.CHECK_INTERVAL || '60';
+    $('sleep-max').value = map.SLEEP_MAX || '3600';
+    $('net-guard').checked = (map.NETWORK_GUARD || '1') === '1';
+    $('fault-restart').checked = (map.FAULT_RESTART || '1') === '1';
+    $('battery-protect').checked = (map.BATTERY_PROTECT || '1') === '1';
+    $('battery-level').value = map.BATTERY_LEVEL || '20';
+}
+
+$('btn-save-settings').onclick = async function(){
+    var lines = [
+        'SCHEDULER_ENABLED=' + ($('sched-enabled').checked ? '1' : '0'),
+        'SCHEDULER_START=' + s($('sched-start').value),
+        'SCHEDULER_END=' + s($('sched-end').value),
+        'CHECK_INTERVAL=' + s($('check-interval').value),
+        'SLEEP_MAX=' + s($('sleep-max').value),
+        'NETWORK_GUARD=' + ($('net-guard').checked ? '1' : '0'),
+        'FAULT_RESTART=' + ($('fault-restart').checked ? '1' : '0'),
+        'BATTERY_PROTECT=' + ($('battery-protect').checked ? '1' : '0'),
+        'BATTERY_LEVEL=' + s($('battery-level').value)
+    ];
+    var content = lines.join('\n') + '\n';
+    await sh('echo "' + content.replace(/"/g,'\\"') + '" > "' + SETTINGS_FILE + '"');
+    await sh('cp "'+SETTINGS_FILE+'" /data/local/tmp/.frpc_settings_backup 2>/dev/null || true');
+    toast('模块设置已保存（下次刷机自动恢复）');
+};
+
 var _defer = null;
 document.querySelectorAll('[data-tab]').forEach(function(b){
     b.onclick = function(){
@@ -699,6 +867,7 @@ document.querySelectorAll('[data-tab]').forEach(function(b){
         if (_defer) clearTimeout(_defer);
         _defer = setTimeout(function(){
             if (b.dataset.tab === 'config') loadConfig();
+            if (b.dataset.tab === 'settings') loadSettings();
             if (b.dataset.tab === 'logs') loadLog();
         }, 200);
     };
@@ -735,5 +904,9 @@ function init() {
 init();
 })();
 </script>
+<div style="text-align:center;padding:16px 0 8px;font-size:11px;color:#8e8e93;line-height:1.6;">
+    CHERWIN FRPC · By <a href="https://github.com/CHERWING" style="color:#007aff;text-decoration:none;">CHERWIN</a><br>
+    <a href="https://github.com/CHERWING/CHERWIN_FRPC" style="color:#007aff;text-decoration:none;">github.com/CHERWING/CHERWIN_FRPC</a>
+</div>
 </body>
 </html>

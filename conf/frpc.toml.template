@@ -2,6 +2,9 @@
 serverAddr = "127.0.0.1" # 请将此处的IP替换为您服务器的真实公网IP
 serverPort = 7000
 
+# 首次连接失败后自动重试（不退出进程）
+loginFailExit = false
+
 # 身份验证（与服务端保持一致）
 auth.method = "token"
 auth.token = "your_strong_token_here"
