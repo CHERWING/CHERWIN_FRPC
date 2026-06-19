@@ -37,6 +37,7 @@ NETWORK_GUARD=${NETWORK_GUARD:-1}
 FAULT_RESTART=${FAULT_RESTART:-1}
 BATTERY_PROTECT=${BATTERY_PROTECT:-1}
 BATTERY_LEVEL=${BATTERY_LEVEL:-20}
+WATCHDOG_INTERVAL=${WATCHDOG_INTERVAL:-20}
 
 update_description() {
     local pid=""
@@ -133,9 +134,13 @@ stop_frpc() {
 
 # 连接异常自动重启监测（自愈）
 watchdog_connection() {
-    echo "[$(date)] Watchdog started (FAULT_RESTART=${FAULT_RESTART})" >> "$MODDIR/log/service.log"
+    echo "[$(date)] Watchdog started" >> "$MODDIR/log/service.log"
     while true; do
-        sleep 20
+        # 重新加载设置（WebUI 修改后可即时生效）
+        [ -f "$SETTINGS_FILE" ] && . "$SETTINGS_FILE"
+        WATCHDOG_INTERVAL=${WATCHDOG_INTERVAL:-20}
+        FAULT_RESTART=${FAULT_RESTART:-1}
+        sleep "$WATCHDOG_INTERVAL"
         [ "$FAULT_RESTART" = "1" ] || continue
         if [ ! -f "$MODDIR/run/frpc.pid" ]; then
             continue

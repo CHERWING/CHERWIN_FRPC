@@ -1,80 +1,189 @@
-[中文](README.md) | [English](README_en.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/FRPC-v0.69.1-blue?style=flat-square" alt="FRPC">
+  <img src="https://img.shields.io/badge/module-v1.2.2-green?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/support-KernelSU%20%7C%20Magisk-orange?style=flat-square" alt="Support">
+  <img src="https://img.shields.io/badge/arch-arm64-red?style=flat-square" alt="Arch">
+</p>
 
-# CHERWIN FRPC
+<div align="center">
+  <h1>CHERWIN FRPC</h1>
+  <p>High-Performance FRP Reverse Proxy Client · KernelSU / Magisk Edition</p>
+  <p>
+    <a href="README.md">中文</a> ·
+    <a href="README_en.md">English</a>
+  </p>
+</div>
 
-> High-Performance FRP Reverse Proxy Client (KernelSU / Magisk Edition)
+---
 
-CHERWIN FRPC is an intranet penetration module built for the Android Root environment (KernelSU & Magisk). It integrates the latest FRPC core (v0.69.1) and comes with a management panel powered by KernelSU's native WebView API, allowing you to deploy network services on your phone at lightning speed.
+## Introduction
 
-## Key Features
+CHERWIN FRPC is an intranet penetration module built for the Android Root environment (KernelSU & Magisk). It integrates the latest FRPC core (v0.69.1) and comes with a management panel powered by KernelSU's native WebView API — no busybox, no httpd required.
 
-- **Minimalist Deployment**: Flash with one click, auto-starts daemon on boot
-- **KernelSU Native Management Panel**: Uses `ksu.exec()` API to execute shell commands directly — no HTTP server needed, open via the "WebUI" button in the module manager
-- **Real-time Monitoring**: FRP process status & PID, server connection status, per-proxy tunnel connectivity, uptime and memory usage
-- **Hot-Reload Config**: Edit `frpc.toml` in the panel, save via base64 encoding, auto-restart with one click
-- **Config Preservation**: On update, config is automatically backed up to `/data/local/tmp/` and restored — never lose your settings again
-- **First-Install Friendly**: Automatically loads `frpc.toml.template` when no config exists, just save to generate
-- **Built-in Config Guide**: Complete configuration manual embedded in the panel (basic config, proxy templates, Store persistence, FAQ)
-- **Low Battery Protection**: Auto-stops frpc when battery is below 20% and not charging
-- **Store Persistence**: Full support for FRP v0.52+ store feature, prevents disconnection after reboot
+---
 
-## Installation & Usage
+## Features
 
-### 1. Flash the Module
-1. Download the latest `CHERWIN_FRPC_magisk_module.zip` release
-2. Open **KernelSU** or **Magisk** manager
-3. Go to "Modules" page, click "Install from storage", select the downloaded ZIP
-4. **Reboot** your device after installation
+### 🚀 Core
+- **Full protocol support** — TCP / UDP / HTTP / HTTPS / STCP / XTCP / SUDP
+- **Token authentication** — Secure communication with your server
+- **Load balancing & health check** — Automatic multi-node failover
+- **Store persistence** — FRP v0.52+ store feature, survives reboot
 
-### 2. Access the Management Panel
-In the KernelSU module list, find `CHERWIN FRPC` and click the **WebUI icon (`<>`)** on the right side. The panel will open in KernelSU's built-in WebView.
+### 🖥️ WebUI Management Panel
+- **Real-time status** — Process health, server connection, per-proxy online/offline
+- **Watchdog** — Auto-detects log errors and restarts frpc on failure
+- **Schedule timer** — Set on/off hours, auto-sleep outside window
+- **Network guard** — Auto-stop on no network, auto-start on recovery
+- **Battery saver** — Configurable threshold (default 20%)
+- **Hot-reload config** — Edit `frpc.toml` online, save = restart
+- **Built-in config guide** — Complete tutorial and proxy templates
 
-> Note: The panel must be opened from within the KernelSU module manager (requires `ksu.exec()` API). External browser access is not supported.
+### 💾 Config Persistence
+- Config auto-backup to `/data/local/tmp/`, survives module updates
+- Dual fallback: installer + boot script both restore from backup
 
-### 3. First-Time Setup
-After first install, open the WebUI, go to the "Config" tab, update `serverAddr` and `auth.token` with your FRP server details, and click "Save" to auto-restart.
+### 📜 Standalone Scripts
+- `start.sh` / `stop.sh` / `restart.sh` — Run directly from MT Manager
+- `uninstall.sh` — Clean uninstall
+- `action.sh` — Toggle via module list "▶" button
 
-## Panel Features
+---
 
-### Status
-Real-time FRP status — process health (green pulsing indicator), server connection, proxy tunnel states, uptime and memory usage
+## Installation
 
-### Config
-Edit `frpc.toml` online, save to auto-restart frpc. On first install, the template is loaded automatically. The config tab also includes a complete configuration guide.
+### Prerequisites
+- Android device with Root access
+- **KernelSU** (recommended) or **Magisk** installed
+- **arm64 (aarch64)** architecture only
 
-### Logs
-View frpc runtime logs and service daemon logs, with one-click clear
+### Steps
 
-## Config Preservation
+```bash
+# 1. Download the latest release ZIP from GitHub Releases
+# 2. Flash: KernelSU / Magisk → Modules → Install from storage → Select ZIP
+# 3. Reboot
+```
 
-Starting from v1.2.0, the module automatically backs up your config to `/data/local/tmp/.frpc_config_backup` (outside the module directory):
+### First-Time Setup
 
-- **At boot**: After service.sh starts frpc and it successfully connects to the server
-- **On WebUI save**: After clicking "Save", once frpc reconnects successfully
-- **On toggle**: After starting via the lightning icon, once connection succeeds
+1. Open KernelSU → Module list → Click CHERWIN FRPC's **WebUI（<>）** button
+2. Go to "Config" tab
+3. Update `serverAddr` and `auth.token` with your server info
+4. Click "Save" — frpc auto-restarts and connects
 
-When flashing a new version, the installer restores config from backup. service.sh also performs a fallback recovery at boot to ensure your config is never lost.
+> ⚠️ The panel must be opened from KernelSU's built-in WebView (requires `ksu.exec()` API). External browser access is not supported.
+
+---
+
+## Usage
+
+### Basic Flow
+1. Fill in server address and token → Save
+2. Add proxy tunnels (TCP / HTTP / HTTPS, etc.)
+3. frpc starts automatically — check status on dashboard
+
+### Schedule Timer (Power Saving)
+- Enable "Schedule", set daily on/off hours (e.g., 08:00–22:00)
+- Outside schedule: frpc stops and enters long sleep
+
+### Watchdog (Anti-Disconnect)
+- Enable "Fault Restart" — watchdog checks logs every 20s
+- Connection error detected without success → auto-restart frpc
+
+### Network Guard
+- No network detected → auto-stop frpc
+- Network restored → auto-start frpc
+
+### Battery Saver
+- Battery below threshold (default 20%) and not charging → auto-stop
+- Charging resumes → scheduler auto-starts frpc
+
+---
+
+## Config Persistence
+
+| Trigger | Backup Content | Backup Path |
+|---------|---------------|-------------|
+| WebUI config save | frpc.toml | `/data/local/tmp/.frpc_config_backup` |
+| WebUI settings save | settings.conf | `/data/local/tmp/.frpc_settings_backup` |
+| Boot (successful login) | frpc.toml | `/data/local/tmp/.frpc_config_backup` |
+| Module update | — | Installer auto-restores from backup |
+
+---
 
 ## FAQ
 
-**Q: The panel shows "Please open from KernelSU module manager"?**
-A: The management panel relies on KernelSU's `ksu.exec()` API. Please open it by clicking the "WebUI" button in the module list, not from an external browser.
+<details>
+<summary><b>Q: WebUI won't open?</b></summary>
+Open from KernelSU module list by clicking the "WebUI（<>）" button, not from an external browser.
+</details>
 
-**Q: How to manually start/stop frpc?**
-A: Click the **lightning icon (⚡)** on the module in KernelSU's module list to toggle start/stop, or use the Start/Stop buttons in the management panel.
+<details>
+<summary><b>Q: Status keeps showing "Checking"?</b></summary>
+Close the page and re-open it via the WebUI button.
+</details>
 
-**Q: What if I lose my config after updating?**
-A: This won't happen with v1.2.0+. If upgrading from an older version, you'll need to re-edit your config once after the first flash. Subsequent updates will preserve it automatically.
+<details>
+<summary><b>Q: Will I lose config after updating?</b></summary>
+Not with v1.2.0+. Config is auto-backed up to /data/local/tmp/ and restored on flash.
+</details>
+
+<details>
+<summary><b>Q: Connection error but no auto-recovery?</b></summary>
+Check if "Fault Restart" is enabled in module settings and the watchdog interval is reasonable (default 20s). Also verify server address and port in frpc.toml.
+</details>
+
+<details>
+<summary><b>Q: Port conflict?</b></summary>
+The frpc Dashboard defaults to port 7400. Change webServer.port in your config if needed.
+</details>
+
+---
 
 ## Changelog
 
-- **v1.2.2** — Independent start/stop/restart scripts, loginFailExit fix, port release fix, instant watchdog restart, proxy status fix, WebUI settings page, scheduler, network guard, battery saver
-- **v1.2.1** — Added uninstall.sh, scheduler, network check, self-heal, accurate proxy status, WebUI settings page, auto-toggle start/stop button
-- **v1.2.0** — Config preservation mechanism, auto-recovery at boot, first-install template loading, multi-fallback memory reading, multiple bug fixes
-- **v1.1.0** — WebUI rewritten: uses `ksu.exec()` API, iOS-style UI, built-in config guide, base64 config saving
-- **v1.0.0** — Initial release: FRPC core v0.69.1, WebUI control panel, Store persistence support
+### v1.2.2 (Current)
+- 🔧 loginFailExit forced off
+- 🛡️ Watchdog: instant restart on error detection
+- 🔌 Port release wait — eliminates `bind: address already in use`
+- 📜 Standalone scripts (start/stop/restart)
+- ⏰ Schedule timer, network guard, battery saver
+- ⚙️ WebUI settings page
 
-## License
+### v1.2.1
+- 🗑️ uninstall.sh
+- 💾 Config backup extended to settings.conf
 
-- Build scripts and management panel originally developed by **CHERWIN**
-- Core binary [frpc](https://github.com/fatedier/frp) belongs to original author fatedier, licensed under Apache-2.0
+### v1.2.0
+- 🛡️ Config preservation mechanism
+- 🔄 Auto-recovery at boot
+- 🧩 First-install template loading
+- 📊 Multi-fallback memory reading
+
+### v1.1.0
+- 🎯 WebUI rewritten (`ksu.exec()` API)
+- 🎨 iOS-style UI
+- 📖 Built-in config guide
+
+### v1.0.0
+- 🎉 Initial release
+- 🔄 FRPC core v0.69.1
+
+---
+
+## Credits
+
+- [FRP](https://github.com/fatedier/frp) — Open-source reverse proxy tool
+- KernelSU WebView API — Native management panel support
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by <a href="https://github.com/CHERWING">CHERWIN</a></p>
+  <p>
+    <a href="https://github.com/CHERWING/CHERWIN_FRPC">
+      <img src="https://img.shields.io/badge/GitHub-CHERWIN_FRPC-181717?style=flat-square&logo=github" alt="GitHub">
+    </a>
+  </p>
+</div>

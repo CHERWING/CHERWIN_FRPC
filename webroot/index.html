@@ -419,7 +419,7 @@ localPath = "/sdcard"</pre>
 <div id="tab-settings" class="tab-content">
     <div class="card">
         <h2>定时运行</h2>
-        <p style="font-size:12px;color:#8e8e93;margin:-8px 0 12px;">在指定时间段内自动运行 frpc</p>
+        <p style="font-size:12px;color:#8e8e93;margin:-8px 0 12px;">在指定时间段内自动运行 frpc。需先开启定时并设置起止时间。</p>
         <div class="setting-group">
             <div class="setting-row">
                 <span class="setting-label">开启定时</span>
@@ -458,6 +458,11 @@ localPath = "/sdcard"</pre>
                 <span class="setting-label">故障重启</span>
                 <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">连续连接失败自动重启 frpc</span>
                 <label class="toggle-switch"><input type="checkbox" id="fault-restart"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">看门狗检测间隔（秒）</span>
+                <span style="font-size:11px;color:#8e8e93;flex:1;text-align:right;margin-right:8px;">故障重启的检测频率</span>
+                <input class="setting-input" type="number" id="watchdog-interval" value="20" min="5">
             </div>
         </div>
         <h2>低电量保护</h2>
@@ -836,6 +841,7 @@ async function loadSettings() {
     $('sleep-max').value = map.SLEEP_MAX || '3600';
     $('net-guard').checked = (map.NETWORK_GUARD || '1') === '1';
     $('fault-restart').checked = (map.FAULT_RESTART || '1') === '1';
+    $('watchdog-interval').value = map.WATCHDOG_INTERVAL || '20';
     $('battery-protect').checked = (map.BATTERY_PROTECT || '1') === '1';
     $('battery-level').value = map.BATTERY_LEVEL || '20';
 }
@@ -849,6 +855,7 @@ $('btn-save-settings').onclick = async function(){
         'SLEEP_MAX=' + s($('sleep-max').value),
         'NETWORK_GUARD=' + ($('net-guard').checked ? '1' : '0'),
         'FAULT_RESTART=' + ($('fault-restart').checked ? '1' : '0'),
+        'WATCHDOG_INTERVAL=' + s($('watchdog-interval').value),
         'BATTERY_PROTECT=' + ($('battery-protect').checked ? '1' : '0'),
         'BATTERY_LEVEL=' + s($('battery-level').value)
     ];

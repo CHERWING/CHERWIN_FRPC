@@ -1,80 +1,193 @@
-[中文](README.md) | [English](README_en.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/FRPC-v0.69.1-blue?style=flat-square" alt="FRPC">
+  <img src="https://img.shields.io/badge/module-v1.2.2-green?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/support-KernelSU%20%7C%20Magisk-orange?style=flat-square" alt="Support">
+  <img src="https://img.shields.io/badge/arch-arm64-red?style=flat-square" alt="Arch">
+</p>
 
-# CHERWIN FRPC
+<div align="center">
+  <h1>CHERWIN FRPC</h1>
+  <p>高性能 FRP 内网穿透客户端 · KernelSU / Magisk 专版</p>
+  <p>
+    <a href="README.md">中文</a> ·
+    <a href="README_en.md">English</a>
+  </p>
+</div>
 
-> 高性能 FRP 内网穿透客户端 (KernelSU / Magisk 专版)
+---
 
-CHERWIN FRPC 是一个专为 Android Root 环境（KernelSU & Magisk）打造的内网穿透模块。它内嵌了最新版的 FRPC 核心（v0.69.1），并附带了一个基于 KernelSU WebView 原生 API 的管理面板，让你在手机上极速部署网络服务。
+## 项目简介
 
-## 核心特性
+CHERWIN FRPC 是一个专为 Android Root 环境（KernelSU & Magisk）打造的 FRP 内网穿透模块。内嵌最新 FRPC 核心（v0.69.1），通过 KernelSU WebView 原生 API 提供完整的管理面板，无需 busybox、无需 httpd，开箱即用。
 
-- **极简部署**：一键刷入，开机自启后台守护进程
-- **KernelSU 原生管理面板**：使用 `ksu.exec()` API 直接执行 shell 命令，无需 HTTP 服务，从模块管理器点击「WebUI」按钮打开
-- **实时状态监控**：FRP 核心进程存活与 PID 监控、服务端连接状态侦测、各代理通道独立状态显示
-- **配置热重载**：在管理面板中直接编辑 `frpc.toml`，base64 编码保存，一键重启服务
-- **配置保留机制**：刷写更新时自动通过 `/data/local/tmp/` 备份恢复配置，再也不丢失
-- **首次安装友好**：无 `frpc.toml` 时自动读取 `frpc.toml.template`，保存即生成配置文件
-- **内置配置手册**：管理面板内嵌完整的配置手册（基础配置、代理模板、Store 持久化、常见问题）
-- **低电量自动保护**：低于 20% 且未充电时自动停止 frpc，延长续航
-- **Store 动态持久化**：支持 FRP v0.52+ 的 store 特性，防重启掉线
+---
 
-## 安装与使用
+## 功能特性
 
-### 1. 刷入模块
-1. 下载最新的 `CHERWIN_FRPC_magisk_module.zip` 发布包
-2. 打开 **KernelSU** 或 **Magisk** 管理器
-3. 进入「模块」页面，点击「从本地安装」，选择下载的 ZIP 包
-4. 安装完成后，**重启设备**
+### 🚀 核心能力
+- **全协议穿透** — TCP / UDP / HTTP / HTTPS / STCP / XTCP / SUDP
+- **token 认证** — 与服务端安全通信
+- **负载均衡 & 健康检查** — 多节点自动切换
+- **Store 持久化** — FRP v0.52+ store 特性，防重启掉线
 
-### 2. 访问管理面板
-在 KernelSU 模块列表中，找到 `CHERWIN FRPC`，点击模块右侧的 **WebUI 图标 (`<>`)**，系统将在 KernelSU 内置 WebView 中打开管理面板。
+### 🖥️ WebUI 管理面板
+- **实时状态** — 进程存活、服务端连接、代理通道在线/离线
+- **连接异常看门狗** — 自动检测日志错误，即时重启 frpc
+- **定时运行调度器** — 设置起止时间，时段外自动休眠省电
+- **网络守卫** — 断网自动停止，网络恢复自动启动
+- **低电量保护** — 可自定义阈值（默认 20%）
+- **配置热重载** — 在线编辑 `frpc.toml`，保存即重启
+- **内置配置手册** — 完整配置教程和代理模板参考
 
-> 注意：面板需在 KernelSU 模块管理器内打开使用（依赖 `ksu.exec()` API），不支持外部浏览器直接访问
+### 💾 配置持久化
+- 配置文件自动备份到 `/data/local/tmp/`，刷写模块不丢失
+- 安装脚本和开机脚本双层兜底恢复
 
-### 3. 首次配置
-首次安装后打开 WebUI，进入「配置」页面，修改 `serverAddr` 和 `auth.token` 为你自己的 FRP 服务端信息，点击「保存」即自动重启生效。
+### 📜 独立脚本
+- `start.sh` / `stop.sh` / `restart.sh` — MT 管理器可直接执行
+- `uninstall.sh` — 卸载时自动清理
+- `action.sh` — 模块列表「▶」快捷启停
 
-## 面板功能
+---
 
-### 状态
-实时掌握 FRP 运行状态 — 进程存活（绿色脉冲呼吸灯）、服务端连接、各隧道连通性、运行时间和内存占用
+## 安装
 
-### 配置
-在线编辑 `frpc.toml`，保存后自动重启 frpc 使配置生效。首次安装会自动加载模板，修改保存后即生成配置文件。配置页面还内置了完整的配置手册参考。
+### 前置条件
+- Android 设备已获取 Root 权限
+- 已安装 **KernelSU**（推荐）或 **Magisk**
+- 仅支持 **arm64（aarch64）** 架构
 
-### 日志
-查看 frpc 运行日志和服务守护日志，支持一键清空
+### 安装步骤
 
-## 配置保留说明
+```bash
+# 1. 下载最新发布包
+# 从 GitHub Releases 下载 CHERWIN_FRPC_magisk_module.zip
 
-从 v1.2.0 开始，模块会在以下时机自动备份配置到 `/data/local/tmp/.frpc_config_backup`（模块目录之外）：
+# 2. 刷入模块
+# KernelSU / Magisk → 模块 → 从本地安装 → 选择 ZIP
 
-- **开机时**：service.sh 启动 frpc 且成功连接服务端后
-- **WebUI 保存**：在配置页面点击「保存」，等待 frpc 成功连接后
-- **切换开关**：在模块列表点击闪电图标启动，成功连接后
+# 3. 重启设备
+```
 
-刷写新版本时，安装脚本会从备份恢复配置。开机时 service.sh 也会再次兜底恢复，确保配置永不丢失。
+### 首次配置
+
+1. 打开 KernelSU → 模块列表 → 点击 CHERWIN FRPC 的 **WebUI（<>）** 按钮
+2. 切换到「配置」标签页
+3. 修改 `serverAddr` 和 `auth.token` 为你的服务器信息
+4. 点击「保存」，frpc 自动重启生效
+
+> ⚠️ 管理面板需在 KernelSU 模块 WebView 内打开（依赖 `ksu.exec()` API），不支持外部浏览器
+
+---
+
+## 使用方法
+
+### 基础流程
+1. 填写服务器地址和 token → 保存
+2. 添加需要的代理通道（TCP / HTTP / HTTPS 等）
+3. frpc 自动启动，在状态页查看连接
+
+### 定时运行（省电）
+- 开启「定时运行」，设置每天运行时段（如 08:00–22:00）
+- 时段外 frpc 自动停止并进入长睡眠
+
+### 故障重启（防掉线）
+- 开启「故障重启」，看门狗每 20 秒检测日志
+- 检测到连接错误且无成功 → 自动重启 frpc
+
+### 网络守卫（防异常）
+- 检测到网络不通 → 自动停止 frpc
+- 网络恢复 → 自动重新启动
+
+### 低电量保护（防耗电）
+- 电量低于阈值（默认 20%）且未充电 → 自动停止
+- 充电恢复后调度器自动拉起
+
+---
+
+## 配置持久化说明
+
+| 触发时机 | 备份内容 | 备份路径 |
+|---------|---------|---------|
+| WebUI 保存配置 | frpc.toml | `/data/local/tmp/.frpc_config_backup` |
+| WebUI 保存模块设置 | settings.conf | `/data/local/tmp/.frpc_settings_backup` |
+| 开机成功连接服务端 | frpc.toml | `/data/local/tmp/.frpc_config_backup` |
+| 刷写新版本 | — | 安装脚本自动从备份恢复 |
+
+---
 
 ## 常见问题
 
-**Q：打开 WebUI 显示"请从 KernelSU 模块内打开"？**
-A：管理面板依赖 KernelSU 的 `ksu.exec()` API，请从模块列表点击「WebUI」按钮进入，不要使用外部浏览器访问。
+<details>
+<summary><b>Q：WebUI 打不开？</b></summary>
+从 KernelSU 模块列表点击「WebUI（<>）」进入，不要用浏览器直接打开。
+</details>
 
-**Q：如何手动启动/停止 frpc？**
-A：在 KernelSU 模块列表点击模块上的 **闪电图标 (⚡)** 可切换启动/停止，或在管理面板内点击「启动」「停止」按钮。
+<details>
+<summary><b>Q：状态一直显示「检测中」？</b></summary>
+关闭页面重新点击 WebUI 按钮打开。
+</details>
 
-**Q：升级后配置丢失怎么办？**
-A：v1.2.0 之后不会再丢失。如果是从旧版升级，第一次刷写后需重新编辑配置保存，之后更新即可自动保留。
+<details>
+<summary><b>Q：刷写模块后配置会丢吗？</b></summary>
+v1.2.0 以上不会。配置自动备份到 /data/local/tmp/，刷写时自动恢复。
+</details>
+
+<details>
+<summary><b>Q：连接异常但不自动恢复？</b></summary>
+检查模块设置中「故障重启」是否开启，看门狗间隔是否合理（默认 20s）。同时确认服务端地址和端口正确。
+</details>
+
+<details>
+<summary><b>Q：端口冲突怎么办？</b></summary>
+frpc Dashboard 默认端口 7400，可在配置中修改 webServer.port。
+</details>
+
+---
 
 ## 版本历史
 
-- **v1.2.2** — 独立启停脚本，loginFailExit 修复，端口释放，看门狗即时重启，代理状态修复，WebUI 模块设置页，定时运行，网络守卫，低电量保护
-- **v1.2.1** — 卸载脚本，多项修复
-- **v1.2.0** — 配置保留机制、开机自动恢复、首次安装自动加载模板、内存读取多路 fallback、多项 Bug 修复
-- **v1.1.0** — WebUI 全面重构：使用 `ksu.exec()` API，iOS 风格新 UI，内嵌配置手册，base64 编码保存配置
-- **v1.0.0** — 首个正式版：FRPC 核心 v0.69.1，WebUI 控制面板，Store 持久化支持
+### v1.2.2（当前）
+- 🔧 loginFailExit 强制关闭
+- 🛡️ 看门狗即时重启（有错误无成功立即重启）
+- 🔌 端口释放等待，杜绝 `bind: address already in use`
+- 📜 独立启停脚本（MT 管理器可直接执行）
+- ⏰ 定时运行、网络守卫、低电量保护
+- ⚙️ WebUI 模块设置页
 
-## 许可声明
+### v1.2.1
+- 🗑️ 卸载脚本 uninstall.sh
+- 💾 配置备份扩展至 settings.conf
 
-- 本模块的构建脚本与管理面板由 **CHERWIN** 原创开发
-- 核心二进制文件 [frpc](https://github.com/fatedier/frp) 归原作者 fatedier 所有，遵循 Apache-2.0 License
+### v1.2.0
+- 🛡️ 配置保留机制
+- 🔄 开机自动恢复配置
+- 🧩 首次安装模板加载
+- 📊 内存读取多路 fallback
+
+### v1.1.0
+- 🎯 WebUI 全面重构（`ksu.exec()` API）
+- 🎨 iOS 风格新 UI
+- 📖 内嵌配置手册
+
+### v1.0.0
+- 🎉 首个正式版
+- 🔄 FRPC 核心 v0.69.1
+
+---
+
+## 致谢
+
+- [FRP](https://github.com/fatedier/frp) — 开源内网穿透工具
+- KernelSU WebView API — 原生管理面板支持
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by <a href="https://github.com/CHERWING">CHERWIN</a></p>
+  <p>
+    <a href="https://github.com/CHERWING/CHERWIN_FRPC">
+      <img src="https://img.shields.io/badge/GitHub-CHERWIN_FRPC-181717?style=flat-square&logo=github" alt="GitHub">
+    </a>
+  </p>
+</div>
