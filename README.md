@@ -179,6 +179,7 @@ frpc Dashboard 默认端口 7400，可在配置中修改 webServer.port。
 ## 致谢
 
 - [FRP](https://github.com/fatedier/frp) — 开源内网穿透工具
+- [LINUX DO](https://linux.do) — 开源技术社区
 - KernelSU WebView API — 原生管理面板支持
 
 ---

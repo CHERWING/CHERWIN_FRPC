@@ -175,6 +175,7 @@ The frpc Dashboard defaults to port 7400. Change webServer.port in your config i
 ## Credits
 
 - [FRP](https://github.com/fatedier/frp) — Open-source reverse proxy tool
+- [LINUX DO](https://linux.do) — Open-source technology community
 - KernelSU WebView API — Native management panel support
 
 ---
